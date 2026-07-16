@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session || session.user.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -18,10 +18,13 @@ export async function GET(request: Request) {
         name: true,
         email: true,
         role: true,
-        region: true,
-        subregion: true,
         active: true,
         createdAt: true,
+        userSegments: {
+          include: {
+            segment: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -40,17 +43,24 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session || session.user.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { name, email, password, role, region } = body
+    const { name, email, password, role, region, segments } = body
 
     // Validation
     if (!name || !email || !password || !role) {
       return NextResponse.json(
         { error: 'Name, email, password, and role are required' },
+        { status: 400 }
+      )
+    }
+
+    if (!segments || segments.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one business segment must be selected' },
         { status: 400 }
       )
     }
@@ -77,17 +87,21 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user
+    // Create user with segment assignments
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role,
-        region: region || null,
-        subregion: null,
-        canApprove: role === 'approver' || role === 'admin',
+        role: role === 'admin' ? 'account_manager' : role, // Convert old admin to account_manager
         active: true,
+        userSegments: {
+          create: segments.map((segmentId: string) => ({
+            segmentId,
+            role: 'account_manager', // Default to account_manager, can be promoted later
+            assignedBy: session.user.id,
+          })),
+        },
       },
     })
 
@@ -102,6 +116,7 @@ export async function POST(request: Request) {
           email: user.email,
           name: user.name,
           role: user.role,
+          segments: segments.length,
           createdBy: session.user.email,
         }),
       },

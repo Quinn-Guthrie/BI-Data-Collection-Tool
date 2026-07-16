@@ -9,10 +9,16 @@ type User = {
   name: string
   email: string
   role: string
-  region: string | null
-  subregion: string | null
   active: boolean
   createdAt: string
+  userSegments: Array<{
+    segment: {
+      id: string
+      name: string
+      slug: string
+      color: string
+    }
+  }>
 }
 
 export default function UsersPage() {
@@ -20,6 +26,8 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [regions, setRegions] = useState<string[]>([])
+  const [segments, setSegments] = useState<any[]>([])
+  const [selectedSegments, setSelectedSegments] = useState<string[]>([])
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,6 +42,7 @@ export default function UsersPage() {
   useEffect(() => {
     loadUsers()
     loadRegions()
+    loadSegments()
   }, [])
 
   const loadUsers = async () => {
@@ -63,16 +72,44 @@ export default function UsersPage() {
     }
   }
 
+  const loadSegments = async () => {
+    try {
+      const res = await fetch('/api/segments')
+      if (res.ok) {
+        const data = await res.json()
+        setSegments(data)
+      }
+    } catch (err) {
+      console.error('Failed to load segments:', err)
+    }
+  }
+
+  const toggleSegment = (segmentId: string) => {
+    setSelectedSegments(prev =>
+      prev.includes(segmentId)
+        ? prev.filter(id => id !== segmentId)
+        : [...prev, segmentId]
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
 
+    if (selectedSegments.length === 0) {
+      setError('Please select at least one business segment')
+      return
+    }
+
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          segments: selectedSegments,
+        }),
       })
 
       const data = await res.json()
@@ -87,6 +124,7 @@ export default function UsersPage() {
           role: 'account_manager',
           region: '',
         })
+        setSelectedSegments([])
         loadUsers()
       } else {
         setError(data.error || 'Failed to create user')
@@ -137,6 +175,7 @@ export default function UsersPage() {
 
   const getRoleBadge = (role: string) => {
     const styles = {
+      super_admin: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
       admin: 'bg-red-100 text-red-800',
       approver: 'bg-purple-100 text-purple-800',
       reviewer: 'bg-blue-100 text-blue-800',
@@ -188,7 +227,7 @@ export default function UsersPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Region</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Segments</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
@@ -207,8 +246,24 @@ export default function UsersPage() {
                     {user.role.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {user.region || '-'}
+                <td className="px-6 py-4">
+                  <div className="flex flex-wrap gap-1">
+                    {user.userSegments.map((us) => (
+                      <span
+                        key={us.segment.id}
+                        className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800"
+                      >
+                        <div
+                          className="w-2 h-2 rounded-full mr-1"
+                          style={{ backgroundColor: us.segment.color }}
+                        />
+                        {us.segment.name}
+                      </span>
+                    ))}
+                    {user.userSegments.length === 0 && (
+                      <span className="text-sm text-gray-400">No segments</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -316,6 +371,39 @@ export default function UsersPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Business Segments * <span className="text-xs text-gray-500">(Select all that apply)</span>
+                </label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                  {segments.map((segment) => (
+                    <label
+                      key={segment.id}
+                      className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedSegments.includes(segment.id)}
+                        onChange={() => toggleSegment(segment.id)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div className="flex items-center space-x-2 flex-1">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: segment.color }}
+                        />
+                        <span className="text-sm font-medium text-gray-900">{segment.name}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {selectedSegments.length > 0 && (
+                  <p className="text-xs text-green-600 mt-2">
+                    ✓ {selectedSegments.length} segment{selectedSegments.length > 1 ? 's' : ''} selected
+                  </p>
+                )}
               </div>
 
               {error && (
