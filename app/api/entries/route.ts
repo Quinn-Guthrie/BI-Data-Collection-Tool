@@ -94,9 +94,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 })
     }
 
+    // Get the Brewing segment ID (only Brewing is active for data collection)
+    const brewingSegment = await prisma.businessSegment.findFirst({
+      where: { slug: 'brewing' }
+    })
+
+    if (!brewingSegment) {
+      return NextResponse.json(
+        { error: 'Brewing segment not found' },
+        { status: 500 }
+      )
+    }
+
     // Check for duplicate
     const existing = await prisma.entry.findFirst({
       where: {
+        businessSegmentId: brewingSegment.id,
         cycleId,
         companyId,
         countryId,
@@ -124,6 +137,7 @@ export async function POST(request: Request) {
     // Create entry
     const entry = await prisma.entry.create({
       data: {
+        businessSegmentId: brewingSegment.id, // Always Brewing for now
         cycleId,
         accountManagerUserId: session.user.id,
         plantId: plantId || null,

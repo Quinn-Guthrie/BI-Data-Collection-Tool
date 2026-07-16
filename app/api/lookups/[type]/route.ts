@@ -8,6 +8,18 @@ export async function GET(
   try {
     const { type } = await params
 
+    // Get Brewing segment ID (only active segment for data collection)
+    const brewingSegment = await prisma.businessSegment.findFirst({
+      where: { slug: 'brewing' }
+    })
+
+    if (!brewingSegment) {
+      return NextResponse.json(
+        { error: 'Brewing segment not found' },
+        { status: 500 }
+      )
+    }
+
     let data
     switch (type) {
       case 'countries':
@@ -23,8 +35,12 @@ export async function GET(
         })
         break
       case 'segments':
+        // Only return Brewing product segments
         data = await prisma.segment.findMany({
-          where: { active: true },
+          where: {
+            active: true,
+            businessSegmentId: brewingSegment.id,
+          },
           orderBy: { name: 'asc' },
         })
         break
@@ -36,8 +52,12 @@ export async function GET(
         })
         break
       case 'enzyme-categories':
+        // Only return Brewing enzyme categories
         data = await prisma.enzymeCategory.findMany({
-          where: { active: true },
+          where: {
+            active: true,
+            businessSegmentId: brewingSegment.id,
+          },
           orderBy: { sortOrder: 'asc' },
         })
         break
