@@ -84,36 +84,131 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm font-medium text-gray-600">Total Records</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Total Records */}
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Records</p>
+              <p className="text-4xl font-bold mt-2">{stats.total}</p>
+              <p className="text-blue-100 text-xs mt-1">All entries</p>
+            </div>
+            <div className="bg-blue-400 bg-opacity-30 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm font-medium text-gray-600">Not Started</p>
-          <p className="text-3xl font-bold text-gray-500 mt-2">
-            {stats.notStarted}
-          </p>
+
+        {/* Not Started */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 transform transition-all hover:scale-105 hover:shadow-xl hover:border-gray-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium uppercase tracking-wide">Not Started</p>
+              <p className="text-4xl font-bold text-gray-700 mt-2">{stats.notStarted}</p>
+              {stats.total > 0 && (
+                <p className="text-gray-500 text-xs mt-1">
+                  {Math.round((stats.notStarted / stats.total) * 100)}% of total
+                </p>
+              )}
+            </div>
+            <div className="bg-gray-100 rounded-full p-3">
+              <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm font-medium text-gray-600">In Progress</p>
-          <p className="text-3xl font-bold text-yellow-600 mt-2">
-            {stats.inProgress}
-          </p>
+
+        {/* In Progress */}
+        <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-100 text-sm font-medium uppercase tracking-wide">In Progress</p>
+              <p className="text-4xl font-bold mt-2">{stats.inProgress}</p>
+              {stats.total > 0 && (
+                <p className="text-yellow-100 text-xs mt-1">
+                  {Math.round((stats.inProgress / stats.total) * 100)}% of total
+                </p>
+              )}
+            </div>
+            <div className="bg-yellow-300 bg-opacity-30 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm font-medium text-gray-600">Finalized</p>
-          <p className="text-3xl font-bold text-green-600 mt-2">
-            {stats.finalized}
-          </p>
+
+        {/* Finalized */}
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium uppercase tracking-wide">Finalized</p>
+              <p className="text-4xl font-bold mt-2">{stats.finalized}</p>
+              {stats.total > 0 && (
+                <p className="text-green-100 text-xs mt-1">
+                  {Math.round((stats.finalized / stats.total) * 100)}% complete
+                </p>
+              )}
+            </div>
+            <div className="bg-green-400 bg-opacity-30 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm font-medium text-gray-600">Pending Approval</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">
-            {stats.pendingApproval}
-          </p>
+
+        {/* Pending Approval */}
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Pending Approval</p>
+              <p className="text-4xl font-bold mt-2">{stats.pendingApproval}</p>
+              {stats.finalized > 0 && (
+                <p className="text-purple-100 text-xs mt-1">
+                  {Math.round((stats.pendingApproval / stats.finalized) * 100)}% of finalized
+                </p>
+              )}
+            </div>
+            <div className="bg-purple-400 bg-opacity-30 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      {stats.total > 0 && (
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Overall Progress</h3>
+            <span className="text-2xl font-bold text-gray-900">
+              {Math.round((stats.finalized / stats.total) * 100)}%
+            </span>
+          </div>
+          <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+              style={{ width: `${(stats.finalized / stats.total) * 100}%` }}
+            >
+              {stats.finalized > 0 && (
+                <span className="text-xs font-bold text-white">
+                  {stats.finalized} / {stats.total}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <span>0 entries</span>
+            <span>{stats.total} entries</span>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-4">
