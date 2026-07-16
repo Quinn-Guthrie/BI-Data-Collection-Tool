@@ -14,7 +14,7 @@ Three major changes have been implemented:
 - **[prisma/seed.ts](prisma/seed.ts:13-23)** - Removed account_manager, reviewer, and approver users
 
 ### What Changed:
-- Seed file now creates only `admin@brewing.com` (password: `admin123`)
+- Seed file now creates only `admin@foodbio.com` (password: `admin123`)
 - All test users (John, David, Sarah) removed
 - Database reseeded with only admin user
 
@@ -120,7 +120,7 @@ Carlsberg Group,United Kingdom,Light beer,,yes,distributor,30000,75,90,
 ## Testing
 
 ### 1. Test Rejection Workflow:
-1. Log in as admin: `admin@brewing.com` / `admin123`
+1. Log in as admin: `admin@foodbio.com` / `admin123`
 2. Go to Admin Panel → Review & Approve
 3. Click "Reject" on any entry
 4. Enter rejection reason: "Please update production figures"
@@ -158,7 +158,7 @@ DATABASE_URL="file:./dev.db" npm run db:seed
 ## Login Credentials
 
 **Admin User:**
-- Email: `admin@brewing.com`
+- Email: `admin@foodbio.com`
 - Password: `admin123`
 
 All other users have been removed.

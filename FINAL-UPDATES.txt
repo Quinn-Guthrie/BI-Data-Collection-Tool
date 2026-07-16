@@ -36,7 +36,7 @@ How to Use:
 
 App name changed throughout:
 
-OLD: "Brewing Sales Exercise"
+OLD: "Food Biosciences Data Collection"
 NEW: "Food Biosciences Data Collection"
 
 Updated Locations:
@@ -110,7 +110,7 @@ APPROVAL WORKFLOW:
 🧪 TEST NEW FEATURES:
 
 1. Test User Editing:
-   - Login: admin@brewing.com / admin123
+   - Login: admin@foodbio.com / admin123
    - Admin Panel → User Management
    - Click "Edit" on any user
    - Change name, segments
@@ -141,7 +141,7 @@ APPROVAL WORKFLOW:
 🚀 READY TO USE!
 
 URL: http://localhost:3000
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 
 Everything updated - Food Biosciences multi-segment platform! 🎊
 

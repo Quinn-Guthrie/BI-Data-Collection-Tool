@@ -34,7 +34,7 @@
 🧪 TEST IT NOW:
 
 1. Go to: http://localhost:3000
-2. Login: admin@brewing.com / admin123
+2. Login: admin@foodbio.com / admin123
 3. Click "Admin Panel" → "User Management"
 4. Click "+ Create User"
 5. Fill in details:
@@ -110,7 +110,7 @@ Scenario 3: All-Access User
 🚀 READY TO TEST!
 
 URL: http://localhost:3000
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 
 Create a test user and assign them to specific segments! 🎊
 

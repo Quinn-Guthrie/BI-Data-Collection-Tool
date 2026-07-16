@@ -27,7 +27,7 @@
 
 ## Test Now
 
-**Login:** admin@brewing.com / admin123
+**Login:** admin@foodbio.com / admin123
 **URL:** http://localhost:3000
 
 **Admin can:**

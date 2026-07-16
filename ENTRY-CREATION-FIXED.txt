@@ -33,7 +33,7 @@
 🧪 TEST IT NOW:
 
 1. Go to: http://localhost:3000
-2. Login: admin@brewing.com / admin123
+2. Login: admin@foodbio.com / admin123
 3. Click "Add New Entry"
 4. Fill out the wizard:
    
@@ -133,7 +133,7 @@ IN DASHBOARD:
 🚀 READY TO USE!
 
 URL: http://localhost:3000
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 
 Create Brewing entries - everything works now! 🎊
 

@@ -14,7 +14,7 @@ Transform the brewing-only app into a multi-segment platform supporting:
    - Access to ALL segments
    - Can promote users to segment admins
    - Manages global settings
-   - Current `admin@brewing.com` becomes super admin
+   - Current `admin@foodbio.com` becomes super admin
 
 2. **Segment Admin** (multiple per segment)
    - Full admin rights within their segment(s)

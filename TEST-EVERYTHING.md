@@ -32,7 +32,7 @@
 ### Test 1: Admin Login
 1. Go to http://localhost:3000/login
 2. Credentials:
-   - Email: `admin@brewing.com`
+   - Email: `admin@foodbio.com`
    - Password: `admin123`
 3. Click "Sign In"
 4. **Expected:** Redirect to dashboard
@@ -50,7 +50,7 @@
 1. On signup page: http://localhost:3000/signup
 2. Fill in:
    - Name: `New Test User`
-   - Email: `newtest@brewing.com`
+   - Email: `newtest@foodbio.com`
    - Region: `Americas`
    - Password: `test123`
    - Confirm: `test123`
@@ -65,22 +65,22 @@
 Try logging in with each:
 
 **Admin:**
-- Email: `admin@brewing.com`
+- Email: `admin@foodbio.com`
 - Password: `admin123`
 - Expected: See all entries
 
 **Account Manager:**
-- Email: `john@brewing.com`
+- Email: `john@foodbio.com`
 - Password: `admin123`
 - Expected: See 2 test entries
 
 **Reviewer:**
-- Email: `david@brewing.com`
+- Email: `david@foodbio.com`
 - Password: `admin123`
 - Expected: See entries in Americas region
 
 **Approver:**
-- Email: `sarah@brewing.com`
+- Email: `sarah@foodbio.com`
 - Password: `admin123`
 - Expected: See entries requiring approval
 
@@ -94,7 +94,7 @@ Should return JSON array of countries
 
 ### Check database users:
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 DATABASE_URL="file:./dev.db" node -e "
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -137,7 +137,7 @@ prisma.user.findMany().then(users => {
 ## Common Issues
 
 **"Invalid credentials" error:**
-- Make sure you're typing exactly: `admin@brewing.com` (lowercase)
+- Make sure you're typing exactly: `admin@foodbio.com` (lowercase)
 - Password is case-sensitive: `admin123`
 
 **Page doesn't redirect after login:**
@@ -152,10 +152,10 @@ prisma.user.findMany().then(users => {
 ## Database Contents Verified
 
 ✅ **4 Users:**
-- admin@brewing.com (admin)
-- john@brewing.com (account_manager)
-- david@brewing.com (reviewer)
-- sarah@brewing.com (approver)
+- admin@foodbio.com (admin)
+- john@foodbio.com (account_manager)
+- david@foodbio.com (reviewer)
+- sarah@foodbio.com (approver)
 
 ✅ **2 Test Entries:**
 - AB InBev, St. Louis, Normal beer

@@ -77,9 +77,9 @@
 - Status, Approval Status, Finalized flag
 
 **Filename Format:**
-`brewing_sales_[CycleName]_[Date].csv`
+`food_biosciences_[CycleName]_[Date].csv`
 
-Example: `brewing_sales_2026_Annual_2026-07-15.csv`
+Example: `food_biosciences_2026_Annual_2026-07-15.csv`
 
 ## API Routes Created
 
@@ -119,7 +119,7 @@ Every admin action is logged:
 ## Testing Steps
 
 ### Test 1: Access Admin Panel
-1. Login as admin: `admin@brewing.com` / `admin123`
+1. Login as admin: `admin@foodbio.com` / `admin123`
 2. Click "Admin" in header navigation
 3. Should see admin dashboard at `/dashboard/admin`
 
@@ -128,7 +128,7 @@ Every admin action is logged:
 2. Click "+ Create User"
 3. Fill form:
    - Name: Test Admin
-   - Email: testadmin@brewing.com
+   - Email: testadmin@foodbio.com
    - Password: admin123
    - Role: Admin
    - Region: Americas

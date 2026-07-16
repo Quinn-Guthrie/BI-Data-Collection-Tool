@@ -62,7 +62,7 @@
 🔑 TEST IT NOW:
 
 1. Go to: http://localhost:3000/login
-2. Login: admin@brewing.com / admin123
+2. Login: admin@foodbio.com / admin123
 3. You'll see "SUPER ADMIN" badge (purple gradient)
 4. Click "Admin Panel" button (purple gradient)
 5. See multi-segment overview at top
@@ -110,7 +110,7 @@ Each segment has its own:
 🚀 READY TO TEST!
 
 URL: http://localhost:3000
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 
 Your admin panel shows FULL control over all 4 segments! 🎊
 

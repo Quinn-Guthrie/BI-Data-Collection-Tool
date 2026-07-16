@@ -21,7 +21,7 @@ Your app now supports **4 business segments:**
 
 If not running:
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
@@ -29,7 +29,7 @@ npm run dev
 Go to: **http://localhost:3000/login**
 
 **Super Admin (Full Access to ALL Segments):**
-- Email: `admin@brewing.com`
+- Email: `admin@foodbio.com`
 - Password: `admin123`
 - Access: All 4 segments (Brewing, Bakery, Dairy, Cheese)
 
@@ -130,7 +130,7 @@ Go to: **http://localhost:3000/login**
 
 ### Server Not Running?
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
@@ -203,7 +203,7 @@ npm run dev
    - Approve or reject entries
 
 2. **Create Test Entry**
-   - Login as john@brewing.com
+   - Login as john@foodbio.com
    - Create entry (Brazil + Carlsberg)
    - Finalize with confidence %
 
@@ -244,7 +244,7 @@ npm run dev
 ## ✅ Ready to Use!
 
 **Server:** http://localhost:3000  
-**Login:** `admin@brewing.com` / `admin123`  
+**Login:** `admin@foodbio.com` / `admin123`  
 **Status:** All features working
 
 **Start here:**

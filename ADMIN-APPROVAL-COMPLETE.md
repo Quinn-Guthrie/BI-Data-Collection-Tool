@@ -64,7 +64,7 @@
 
 ### Approve Entries
 1. Login as admin: http://localhost:3000/login
-   - Email: `admin@brewing.com`
+   - Email: `admin@foodbio.com`
    - Password: `admin123`
 2. Go to Admin Panel: http://localhost:3000/dashboard/admin
 3. Click "Review & Approve" card
@@ -130,7 +130,7 @@ Cannot delete user with 5 entries. Deactivate instead.
   newValue: {
     approvalStatus: 'approved',
     reason: null,
-    reviewedBy: 'admin@brewing.com'
+    reviewedBy: 'admin@foodbio.com'
   }
 }
 ```
@@ -138,9 +138,9 @@ Cannot delete user with 5 entries. Deactivate instead.
 ## Testing Steps
 
 ### Test 1: Approve Entry
-1. Login as account manager: `john@brewing.com` / `admin123`
+1. Login as account manager: `john@foodbio.com` / `admin123`
 2. Create and finalize a new entry (use **Brazil + AB InBev**)
-3. Logout, login as admin: `admin@brewing.com` / `admin123`
+3. Logout, login as admin: `admin@foodbio.com` / `admin123`
 4. Go to `/dashboard/admin/approvals`
 5. Should see entry in **Pending** tab
 6. Click **"Approve"**
@@ -163,7 +163,7 @@ Cannot delete user with 5 entries. Deactivate instead.
 7. **Expected:** User removed from list
 
 ### Test 4: Cannot Delete User With Entries
-1. Try to delete `john@brewing.com` (has 2 test entries)
+1. Try to delete `john@foodbio.com` (has 2 test entries)
 2. **Expected:** Error message "Cannot delete user with 2 entries. Deactivate instead."
 
 ## API Endpoints
@@ -237,6 +237,6 @@ Cannot delete user with 5 entries. Deactivate instead.
 
 **Server Ready:** http://localhost:3000
 
-**Test Account:** `admin@brewing.com` / `admin123`
+**Test Account:** `admin@foodbio.com` / `admin123`
 
 **All features working and tested!**

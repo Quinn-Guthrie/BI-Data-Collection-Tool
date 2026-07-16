@@ -434,4 +434,4 @@ lib/
 Refresh your browser and test everything at:
 **http://localhost:3000**
 
-Login: `admin@brewing.com` / `admin123`
+Login: `admin@foodbio.com` / `admin123`

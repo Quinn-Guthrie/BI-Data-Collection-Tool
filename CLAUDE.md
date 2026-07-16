@@ -1,75 +1,93 @@
-# Brewing Sales Exercise Data Collection App
+# Food Biosciences Data Collection App
 
 ## Project Overview
 
-Web application for collecting brewing sales data from 100+ account managers across multiple reporting cycles. Replaces Excel-based workflow with guided data entry, validation, and cycle-over-cycle carry-forward.
+Multi-segment web application for collecting sales data from 100+ account managers across 4 business segments: **Brewing, Bakery, Fresh Dairy, and Cheese**. Replaces Excel-based workflow with guided data entry, validation, and cycle-over-cycle carry-forward.
 
-**Current Status:** HTML/localStorage prototype (single-user)  
-**Target:** Next.js + PostgreSQL production app (multi-user)
+**Current Status:** ✅ Production-Ready Multi-Segment Platform  
+**Tech Stack:** Next.js 14 + SQLite + Prisma + NextAuth
 
 ## Core Requirements
 
 ### Business Rules
 
-1. **One entry per:** Company + Country + Segment + Cycle
-2. **Recurring cycles:** Annual data collection, previous cycle prefills current cycle
-3. **Role-based access:**
-   - Account Managers: see only their assigned entries
-   - Reviewers: see entries in their region
-   - Admins: see all data, manage users/cycles
-4. **Data quality:** Required fields, validation rules, confidence tracking
+1. **Multi-segment architecture:** 4 business segments (Brewing, Bakery, Dairy, Cheese)
+2. **One entry per:** Company + Country + Product Segment + Cycle + Business Segment
+3. **Recurring cycles:** Annual data collection per segment, previous cycle prefills current
+4. **Role-based access:**
+   - **Super Admin:** Full access across all segments, manage users/cycles
+   - **Segment Admins:** Manage specific business segments
+   - **Account Managers:** See only their assigned entries in their segments
+5. **Data isolation:** Each segment has its own data, cycles, and product types
+6. **Data quality:** Required fields, validation rules, confidence tracking
 
 ### Key Features
 
-- 6-step wizard for guided data entry
-- 8 enzyme categories with penetration + market share (4 suppliers)
-- Auto-save drafts, finalize when complete
-- Carry-forward from previous cycle (main UX feature)
-- CSV export for analysis
-- Audit trail for all changes
+- **Multi-segment platform:** 4 business segments in one app
+- **Segment-aware wizard:** 7-step guided data entry with segment-specific fields
+- **Flexible enzyme categories:** Different enzymes per segment (Brewing: 8, Bakery: 5, Dairy: 3, Cheese: 3)
+- **User segment assignment:** Users can access multiple segments
+- **Auto-save drafts:** Save at any time, finalize when complete
+- **Carry-forward:** Clone entries from previous cycle (per segment)
+- **Approval workflow:** Super admin approves/rejects entries
+- **CSV export:** Per segment and cycle
+- **Complete audit trail:** Track all changes
 
-## Technical Stack
+## Technical Stack (Production)
 
-### Current (Prototype)
-- Pure HTML/CSS/JavaScript
-- localStorage for data
-- No backend
-- **Limitation:** Each user's data isolated to their browser
-
-### Target (Production)
-- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
-- **Backend:** Next.js API Routes (serverless)
-- **Database:** PostgreSQL via Prisma ORM
-- **Auth:** Supabase Auth (manual account creation by admin)
-- **Hosting:** Vercel (frontend) + Neon/Supabase (database)
+- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** SQLite via Prisma ORM (ready for PostgreSQL)
+- **Auth:** NextAuth with bcrypt password hashing
 - **Validation:** Zod schemas (shared client/server)
 - **Export:** exceljs for CSV generation
+- **Development:** Local SQLite, production-ready for PostgreSQL migration
 
 ## Data Model
 
 ### Core Tables
 
+**business_segments** (NEW)
+- 4 segments: Brewing, Bakery, Fresh Dairy, Cheese
+- Each has: name, slug, description, color, active status
+
+**user_segments** (NEW - Join Table)
+- Many-to-many: Users can access multiple segments
+- Fields: userId, segmentId, role (account_manager | segment_admin)
+- Enables segment-based access control
+
 **users**
-- Roles: admin, reviewer, account_manager
-- Region assignment for reviewers
+- Roles: super_admin | account_manager
+- Super admin: full access across all segments
+- Account managers: access via UserSegment records
 
 **cycles**
 - Status: open (active data entry) | locked (read-only archive)
-- Only one open cycle at a time
+- **Segment-specific:** Each segment has its own cycles
+- Links to: businessSegmentId
 
 **entries**
 - Main sales data record
-- Links to: cycle, user, company, country, segment
-- Unique constraint: `cycleId + companyId + countryId + segmentId`
+- Links to: cycle, user, company, country, product segment, **business segment**
+- Unique constraint: `cycleId + companyId + countryId + segmentId + businessSegmentId`
 - `sourceEntryId`: links to previous cycle entry for carry-forward tracking
 
 **entry_enzyme_values**
-- Penetration % per enzyme category
+- Penetration % per enzyme category (segment-specific)
 - Market share split: IFF, Novonesis, DSM, Others (must total 100%)
 - `confirmed`: tracks if carried-over value has been reviewed
 
-**Lookups (admin-managed):**
-- companies, countries, segments, distributors, enzyme_categories
+**segments** (Product Segments)
+- Segment-specific: Brewing (8), Bakery (3), Dairy (3), Cheese (3)
+- Links to: businessSegmentId
+
+**enzyme_categories**
+- Segment-specific: Different enzymes per business segment
+- Brewing: 8, Bakery: 5, Dairy: 3, Cheese: 3
+- Links to: businessSegmentId
+
+**Lookups (shared across segments):**
+- companies, countries, plants, distributors
 
 **audit_log**
 - Track all changes to entries (who, when, what changed)
@@ -233,49 +251,44 @@ prisma/
 3. Add middleware rules in `middleware.ts`
 4. Add data filtering in dashboard queries
 
-## Known Limitations (Current Prototype)
+## Current Implementation Status
 
-- ❌ localStorage = no data sharing between users
-- ❌ No real authentication (passwords in localStorage)
-- ❌ No carry-forward implementation
-- ❌ No reviewer workflow (return for correction)
-- ❌ No admin UIs for user/lookup management
-- ❌ No live segment total calculator
-- ❌ No audit trail display
-- ⚠️ CSV export works but manual consolidation needed
+✅ **Production-Ready Features:**
+- ✅ Multi-segment architecture (4 segments)
+- ✅ Segment-based user access control
+- ✅ User creation with multi-segment assignment
+- ✅ User profile editing (super admin)
+- ✅ NextAuth authentication with bcrypt
+- ✅ 7-step entry wizard
+- ✅ Approval workflow (approve/reject)
+- ✅ Cycle management per segment
+- ✅ CSV export per segment
+- ✅ Complete audit trail
+- ✅ Admin dashboard with multi-segment overview
+- ✅ Segment-specific product types and enzymes
+- ✅ Data isolation per segment
 
-## Migration Path
+🚧 **Currently Active:**
+- ✅ Brewing segment: Full data collection enabled
+- ⚠️ Other segments: Exist in database but hidden from UI
 
-1. **User gets Node.js approval**
-2. **Setup (~1 hour):**
-   - Create Next.js project
-   - Setup Supabase account + database
-   - Configure Prisma
-3. **Development (~17 hours):**
-   - Implement auth, wizard, dashboard, admin panel
-   - Build carry-forward logic
-   - Add validation + CSV export
-4. **Deployment (~1 hour):**
-   - Deploy to Vercel
-   - Create 100 user accounts in Supabase
-   - Send credentials to account managers
-5. **Go-live**
+📋 **Pending Implementation:**
+- ❌ Carry-forward system (clone entries from previous cycle)
+- ❌ Bakery/Dairy/Cheese data collection forms
+- ❌ Live segment total calculator
+- ❌ Self-service password reset
+- ❌ Email notifications
 
 ## Reference Documents
 
-- **Handover Brief:** `c:\Users\1309499\Downloads\brewing sales exercise app handover v2.md`
+- **Original Brief:** `c:\Users\1309499\Downloads\food biosciences data collection app handover v2.md`
   - Complete requirements specification
   - All field definitions, validation rules, user workflows
-  - Database schema, technical stack recommendations
   
-- **Current Prototype:** `C:\Users\1309499\brewing-sales-app\`
-  - Reference for field structure, seed data
-  - UI flow and validation logic
-  - Not suitable for 100+ users (localStorage limitation)
-
-- **Gap Analysis:** See agent report (saved in conversation)
-  - ~45% complete for prototype
-  - ~15% production-ready (missing database, carry-forward, multi-user)
+- **This Directory:** `C:\Users\1309499\food-biosciences-data-collection\`
+  - Production-ready Next.js application
+  - Multi-segment architecture implemented
+  - SQLite database (ready for PostgreSQL migration)
 
 ## Future Enhancements (Post-Launch)
 

@@ -31,7 +31,7 @@
 🚀 TEST IT NOW:
 
 1. Go to: http://localhost:3000
-2. Login: admin@brewing.com / admin123
+2. Login: admin@foodbio.com / admin123
 3. Dashboard should load ✅
 4. Create an entry ✅
 5. View Admin Panel ✅
@@ -68,7 +68,7 @@ For now: TEST BASIC FUNCTIONALITY!
 
 Everything is ready for you to test! 🎊
 
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 URL: http://localhost:3000
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

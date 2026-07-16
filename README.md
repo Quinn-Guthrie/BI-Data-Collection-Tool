@@ -1,28 +1,28 @@
-# Brewing Sales Exercise - Data Collection App
+# Food Biosciences Data Collection
 
 **Version:** 2.0 - Production Ready  
-**Status:** ✅ All Features Complete  
+**Status:** ✅ Multi-Segment Platform Complete  
 **Server:** http://localhost:3000
 
 ## Quick Start
 
 ### 1. Start the Server
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
 Server starts at: **http://localhost:3000**
 
 ### 2. Login
-**Admin Account (Full Permissions):**
-- Email: `admin@brewing.com`
+**Super Admin Account (Full Permissions):**
+- Email: `admin@foodbio.com`
 - Password: `admin123`
 
 **Test Accounts:**
-- Account Manager: `john@brewing.com` / `admin123`
-- Reviewer: `david@brewing.com` / `admin123`
-- Approver: `sarah@brewing.com` / `admin123`
+- Account Manager: `john@foodbio.com` / `admin123`
+- Reviewer: `david@foodbio.com` / `admin123`
+- Approver: `sarah@foodbio.com` / `admin123`
 
 ### 3. Create New Account (Self-Signup)
 - Go to: http://localhost:3000/signup
@@ -32,21 +32,26 @@ Server starts at: **http://localhost:3000**
 
 ## Features Complete
 
-### ✅ User Management
-- Self-signup for account managers
-- Admin creates users with any role
+### ✅ Multi-Segment User Management
+- **Business Segments:** Brewing, Bakery, Fresh Dairy, Cheese
+- **Super Admin:** Full access across all segments
+- **Segment Admins:** Manage specific segments
+- Create users with multi-segment access
+- Edit user profiles and segment assignments
 - Activate/deactivate users
 - **Delete users** (only if no entries)
-- 4 roles: admin, approver, reviewer, account_manager
+- Segment-based data isolation
 
 ### ✅ Data Entry Wizard (7 Steps)
-1. Account (auto-filled)
+1. Account (auto-filled, segment-aware)
 2. Plant & Country (with region auto-fill)
 3. Company Details (customer status, go-to-market, production)
-4. Segment (with production %)
-5. Enzymes (8 categories: usage status + penetration %)
+4. Product Segment (with production %)
+5. Enzymes (segment-specific categories: usage status + penetration %)
 6. Market Share (IFF, Novonesis, DSM, Others - must = 100%)
 7. Review & Finalize (enter confidence % + comments)
+
+**Currently Active:** Brewing segment only (other segments ready but hidden)
 
 ### ✅ Save & Finalize
 - **Save Draft:** Anytime during wizard (requires basic fields only)
@@ -69,16 +74,18 @@ Server starts at: **http://localhost:3000**
 - Audit trail for all cycle operations
 
 ### ✅ Export Data (Admin)
-- Select any cycle
+- Select any cycle and segment
 - Download complete CSV export
-- Includes: All fields + 8 enzyme categories (48 enzyme columns)
+- Includes: All fields + segment-specific enzyme categories
 - Opens in Excel/Google Sheets
-- Filename: `brewing_sales_[CycleName]_[Date].csv`
+- Filename: `food_biosciences_[Segment]_[CycleName]_[Date].csv`
 
 ### ✅ Admin Dashboard
-- User stats (total, active)
-- Cycle info (current open cycle)
-- Entry counts across all cycles
+- **Multi-Segment Overview:** All 4 business segments
+- User stats (total, active, per segment)
+- Cycle info (per segment)
+- Entry counts across all cycles and segments
+- Color-coded segment cards
 - Quick actions: Users, Cycles, Export, Approvals
 
 ### ✅ Security & Audit
@@ -115,7 +122,7 @@ npx prisma db seed       # Seed data
 
 ### Start Server
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
@@ -179,4 +186,4 @@ taskkill /PID [PID] /F
 ---
 
 **Server:** http://localhost:3000  
-**Admin Login:** `admin@brewing.com` / `admin123`
+**Admin Login:** `admin@foodbio.com` / `admin123`

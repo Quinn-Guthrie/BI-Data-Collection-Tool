@@ -46,7 +46,7 @@
 1. Go to http://localhost:3000/signup
 2. Fill in the form:
    - Name: `Test Manager`
-   - Email: `testuser@brewing.com`
+   - Email: `testuser@foodbio.com`
    - Region: `Americas` (or leave blank)
    - Password: `test123`
    - Confirm Password: `test123`
@@ -56,14 +56,14 @@
 ### Test 2: Login with New Account
 1. Should be on login page after signup
 2. Enter credentials:
-   - Email: `testuser@brewing.com`
+   - Email: `testuser@foodbio.com`
    - Password: `test123`
 3. Click "Sign In"
 4. **Expected:** Redirect to dashboard showing 0 entries (new account)
 
 ### Test 3: Duplicate Email Prevention
 1. Go to http://localhost:3000/signup
-2. Try to create account with same email: `testuser@brewing.com`
+2. Try to create account with same email: `testuser@foodbio.com`
 3. **Expected:** Error message "An account with this email already exists"
 
 ### Test 4: Password Validation
@@ -98,13 +98,13 @@
 After creating a test account, verify in database:
 
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npx prisma studio
 ```
 
 1. Open `User` table
 2. **Expected:** New record with:
-   - email: `testuser@brewing.com`
+   - email: `testuser@foodbio.com`
    - role: `account_manager`
    - password: (hashed value, not plain text)
    - region: `Americas` (if selected)

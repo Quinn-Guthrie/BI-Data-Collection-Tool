@@ -1,6 +1,6 @@
 {
-  "name": "brewing-sales-app-v2",
-  "version": "0.1.0",
+  "name": "food-biosciences-data-collection",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

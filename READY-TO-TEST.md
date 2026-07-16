@@ -11,7 +11,7 @@
   - 🧀 **Cheese** (orange #f97316)
 
 ### User System ✅
-- **Super Admin** created: `admin@brewing.com` / `admin123`
+- **Super Admin** created: `admin@foodbio.com` / `admin123`
 - Admin has **segment_admin** access to ALL 4 segments
 - New role system: `super_admin` and `account_manager`
 
@@ -46,7 +46,7 @@ npm run dev
 1. Go to: http://localhost:3000
 2. You'll be redirected to: http://localhost:3000/login
 3. Enter credentials:
-   - **Email:** `admin@brewing.com`
+   - **Email:** `admin@foodbio.com`
    - **Password:** `admin123`
 4. Click **Sign In**
 
@@ -127,7 +127,7 @@ Navigate to tables and verify:
 ```bash
 # Verify admin user exists
 npx prisma studio
-# Check User table, should see admin@brewing.com
+# Check User table, should see admin@foodbio.com
 
 # If not, re-run seed:
 DATABASE_URL="file:./dev.db" npx tsx prisma/seed.ts
@@ -200,7 +200,7 @@ EnzymeCategory
 ## 🎯 Testing Checklist
 
 ### Basic Functionality
-- [ ] Log in as admin@brewing.com
+- [ ] Log in as admin@foodbio.com
 - [ ] Dashboard loads without errors
 - [ ] Can see stats section
 - [ ] Can see "Add New Entry" button
@@ -314,7 +314,7 @@ If you can do all of these, migration is successful:
 
 **Super Admin:**
 - **URL:** http://localhost:3000
-- **Email:** `admin@brewing.com`
+- **Email:** `admin@foodbio.com`
 - **Password:** `admin123`
 - **Access:** ALL 4 segments (Brewing, Bakery, Dairy, Cheese)
 - **Role:** super_admin + segment_admin for each segment

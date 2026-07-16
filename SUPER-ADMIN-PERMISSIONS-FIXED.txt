@@ -39,7 +39,7 @@
 🧪 TEST APPROVE/REJECT NOW:
 
 1. Create a test entry first:
-   - Login: admin@brewing.com / admin123
+   - Login: admin@foodbio.com / admin123
    - Click "Add New Entry"
    - Complete wizard
    - Click "Finalize Entry"
@@ -132,7 +132,7 @@ As super admin, you can now:
 🚀 READY TO TEST!
 
 URL: http://localhost:3000
-Login: admin@brewing.com / admin123
+Login: admin@foodbio.com / admin123
 
 Full admin access restored - test approve/reject now! 🎊
 

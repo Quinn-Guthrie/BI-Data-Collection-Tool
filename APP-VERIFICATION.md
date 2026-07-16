@@ -1,6 +1,6 @@
 # App Verification Checklist ✅
 
-**Location:** `C:\Users\1309499\brewing-sales-app-v2`  
+**Location:** `C:\Users\1309499\food-biosciences-data-collection`  
 **Date:** 2026-07-15  
 **Version:** 2.0 - Production Ready
 
@@ -9,7 +9,7 @@
 ## ✅ Folder Structure Complete
 
 ```
-brewing-sales-app-v2/
+food-biosciences-data-collection/
 ├── 📁 app/                          ✅ Next.js app directory
 │   ├── 📁 api/                      ✅ API routes
 │   │   ├── 📁 admin/                ✅ Admin APIs
@@ -196,7 +196,7 @@ netstat -ano | findstr :3000
 
 **Start server:**
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
@@ -207,22 +207,22 @@ npm run dev
 ## ✅ Test Credentials
 
 **Admin (Full Access):**
-- Email: `admin@brewing.com`
+- Email: `admin@foodbio.com`
 - Password: `admin123`
 - Access: ALL features
 
 **Account Manager:**
-- Email: `john@brewing.com`
+- Email: `john@foodbio.com`
 - Password: `admin123`
 - Access: Create entries, view own entries
 
 **Reviewer:**
-- Email: `david@brewing.com`
+- Email: `david@foodbio.com`
 - Password: `admin123`
 - Access: View entries in region
 
 **Approver:**
-- Email: `sarah@brewing.com`
+- Email: `sarah@foodbio.com`
 - Password: `admin123`
 - Access: View entries, approve/reject
 
@@ -232,13 +232,13 @@ npm run dev
 
 ### 1. Start Server
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
 ### 2. Login
 Go to: http://localhost:3000/login  
-Use: `admin@brewing.com` / `admin123`
+Use: `admin@foodbio.com` / `admin123`
 
 ### 3. Test Approval (NEW Feature)
 1. Go to: http://localhost:3000/dashboard/admin/approvals
@@ -314,7 +314,7 @@ git commit -m "Version 2.0 - All features complete"
 
 **✅ EVERYTHING IS READY TO USE**
 
-**Folder:** `C:\Users\1309499\brewing-sales-app-v2`  
+**Folder:** `C:\Users\1309499\food-biosciences-data-collection`  
 **Status:** Complete application code  
 **Server:** Running at http://localhost:3000  
 **Database:** Seeded with test data  
@@ -334,6 +334,6 @@ git commit -m "Version 2.0 - All features complete"
 **Start Here:**
 - Open: `START-HERE.md` (30-second quick start)
 - Login: http://localhost:3000/login
-- Admin: `admin@brewing.com` / `admin123`
+- Admin: `admin@foodbio.com` / `admin123`
 
-**Everything is in the `brewing-sales-app-v2` folder and ready to use!** ✅
+**Everything is in the `food-biosciences-data-collection` folder and ready to use!** ✅

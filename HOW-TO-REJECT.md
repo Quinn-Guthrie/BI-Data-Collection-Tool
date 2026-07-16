@@ -8,7 +8,7 @@ The reject button is fully functional! Here's exactly how to use it.
 
 ### 1. Go to Approvals Page
 - Login as admin: http://localhost:3000/login
-  - Email: `admin@brewing.com`
+  - Email: `admin@foodbio.com`
   - Password: `admin123`
 - Navigate to: http://localhost:3000/dashboard/admin/approvals
 
@@ -59,7 +59,7 @@ You have 3 finalized entries:
 3. I'll fix this to show both pending AND submitted in Pending tab
 
 ### Option 2: Create New Entry to Reject
-1. Logout, login as: `john@brewing.com` / `admin123`
+1. Logout, login as: `john@foodbio.com` / `admin123`
 2. Create new entry with different combination (e.g., **Brazil + Carlsberg**)
 3. Fill all steps, enter confidence %, finalize
 4. Logout, login as admin
@@ -98,7 +98,7 @@ You have 3 finalized entries:
   "newValue": {
     "approvalStatus": "rejected",
     "reason": "Data incomplete...",
-    "reviewedBy": "admin@brewing.com"
+    "reviewedBy": "admin@foodbio.com"
   }
 }
 ```

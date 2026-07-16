@@ -88,7 +88,7 @@ GET /api/activity?limit=20
     "user": {
       "id": "user-789",
       "name": "Admin User",
-      "email": "admin@brewing.com"
+      "email": "admin@foodbio.com"
     },
     "entityDetails": {
       "company": { "name": "Heineken" },

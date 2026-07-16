@@ -60,7 +60,7 @@ Same company + country + segment, different plant works:
 ## Test Instructions
 
 ### Test 1: Save Draft with New Combination
-1. Login: http://localhost:3000/login (`john@brewing.com` / `admin123`)
+1. Login: http://localhost:3000/login (`john@foodbio.com` / `admin123`)
 2. Go to New Entry: http://localhost:3000/dashboard/entries/new
 3. **Step 2 - Plant:**
    - Country: **Brazil** (avoid US, Germany)

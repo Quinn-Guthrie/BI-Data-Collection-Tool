@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function LoginForm() {
-  const [email, setEmail] = useState('admin@brewing.com')
+  const [email, setEmail] = useState('admin@foodbio.com')
   const [password, setPassword] = useState('admin123')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -74,7 +74,7 @@ function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="admin@brewing.com"
+                placeholder="admin@foodbio.com"
               />
             </div>
 

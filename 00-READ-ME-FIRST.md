@@ -1,6 +1,6 @@
 # 🎯 READ ME FIRST - Complete App Ready to Use
 
-**Location:** `C:\Users\1309499\brewing-sales-app-v2`  
+**Location:** `C:\Users\1309499\food-biosciences-data-collection`  
 **Status:** ✅ COMPLETE - ALL CODE AND DOCUMENTATION INCLUDED  
 **Version:** 2.0 - Production Ready
 
@@ -23,7 +23,7 @@
 
 ### 1. Start Server (if not running)
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
@@ -31,7 +31,7 @@ npm run dev
 Go to: **http://localhost:3000/login**
 
 ### 3. Login
-**Admin:** `admin@brewing.com` / `admin123`
+**Admin:** `admin@foodbio.com` / `admin123`
 
 **That's it! You're ready to use the app.**
 
@@ -67,13 +67,13 @@ Go to: **http://localhost:3000/login**
 
 ## 🎯 What You Can Do Right Now
 
-### Admin Features (admin@brewing.com)
+### Admin Features (admin@foodbio.com)
 ✅ **Approve/Reject Entries** → `/dashboard/admin/approvals`
 ✅ **Manage Users** → `/dashboard/admin/users`
 ✅ **Manage Cycles** → `/dashboard/admin/cycles`
 ✅ **Export CSV** → `/dashboard/admin/export`
 
-### Account Manager Features (john@brewing.com)
+### Account Manager Features (john@foodbio.com)
 ✅ **Create Entries** → `/dashboard/entries/new`
 ✅ **View My Entries** → `/dashboard`
 ✅ **Edit Drafts** → Click entry, edit, save
@@ -157,7 +157,7 @@ taskkill /PID [PID] /F
 ## 📂 Folder Contents
 
 ```
-brewing-sales-app-v2/
+food-biosciences-data-collection/
 ├── app/                    ✅ Next.js application
 ├── components/             ✅ React components  
 ├── lib/                    ✅ Utilities
@@ -249,7 +249,7 @@ Server: Can start immediately
 
 **Just run:** `npm run dev`  
 **Then go to:** http://localhost:3000  
-**Login:** `admin@brewing.com` / `admin123`
+**Login:** `admin@foodbio.com` / `admin123`
 
 **Complete application ready to use! 🎉**
 

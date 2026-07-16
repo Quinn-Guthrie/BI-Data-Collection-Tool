@@ -62,7 +62,7 @@
 
 ### 5. **Admin-Only Access** ✅
 - Removed all non-admin users from database
-- Only `admin@brewing.com` exists
+- Only `admin@foodbio.com` exists
 - Removed test account listings from login page
 
 **Files:**
@@ -81,7 +81,7 @@
 
 ### Login Credentials:
 ```
-Email: admin@brewing.com
+Email: admin@foodbio.com
 Password: admin123
 ```
 
@@ -104,7 +104,7 @@ Password: admin123
 ## 📁 Project Structure
 
 ```
-brewing-sales-app-v2/
+food-biosciences-data-collection/
 ├── app/
 │   ├── api/
 │   │   ├── activity/route.ts          # Activity log API
@@ -347,4 +347,4 @@ Your brewing sales app is fully functional with all requested features:
 **All changes are saved, committed, and ready to use!**
 
 Access the app at: **http://localhost:3000**  
-Login: **admin@brewing.com** / **admin123**
+Login: **admin@foodbio.com** / **admin123**

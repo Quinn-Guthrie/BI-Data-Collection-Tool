@@ -1,7 +1,7 @@
 # Current Version Status - Brewing Sales App v2.0
 
 **Date:** 2026-07-15  
-**Location:** `C:\Users\1309499\brewing-sales-app-v2`  
+**Location:** `C:\Users\1309499\food-biosciences-data-collection`  
 **Status:** ✅ ALL FEATURES COMPLETE AND WORKING
 
 ---
@@ -57,15 +57,15 @@
 
 ### Start Server
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npm run dev
 ```
 
 **URL:** http://localhost:3000
 
 ### Login
-- **Admin:** `admin@brewing.com` / `admin123`
-- **Account Manager:** `john@brewing.com` / `admin123`
+- **Admin:** `admin@foodbio.com` / `admin123`
+- **Account Manager:** `john@foodbio.com` / `admin123`
 
 ### Stop Server
 ```bash
@@ -187,7 +187,7 @@ taskkill /PID [PID] /F
 - [x] User removed from list
 
 ### Test 6: Cannot Delete User with Entries
-- [x] Try to delete `john@brewing.com`
+- [x] Try to delete `john@foodbio.com`
 - [x] Error shown: "Cannot delete user with X entries"
 - [x] User NOT deleted
 
@@ -211,7 +211,7 @@ taskkill /PID [PID] /F
 
 ## 📊 Database Status
 
-**Location:** `C:\Users\1309499\brewing-sales-app-v2\dev.db`  
+**Location:** `C:\Users\1309499\food-biosciences-data-collection\dev.db`  
 **Type:** SQLite  
 **Size:** ~200 KB
 
@@ -226,7 +226,7 @@ taskkill /PID [PID] /F
 
 ### View Database:
 ```bash
-cd C:\Users\1309499\brewing-sales-app-v2
+cd C:\Users\1309499\food-biosciences-data-collection
 npx prisma studio
 ```
 Opens at: http://localhost:5555
@@ -276,7 +276,7 @@ npm run dev
 ## 📁 File Structure
 
 ```
-brewing-sales-app-v2/
+food-biosciences-data-collection/
 ├── app/
 │   ├── api/
 │   │   ├── admin/
@@ -350,6 +350,6 @@ brewing-sales-app-v2/
 - Role-based access control
 
 **Server Ready:** http://localhost:3000  
-**Test Login:** `admin@brewing.com` / `admin123`
+**Test Login:** `admin@foodbio.com` / `admin123`
 
 **Status:** ✅ Production Ready - All Features Complete

@@ -30,7 +30,7 @@ npm run db:seed
 
 **Fix 2: Check password**
 - Use: `admin123` (not Admin123 or ADMIN123)
-- Email: `john@brewing.com` (lowercase)
+- Email: `john@foodbio.com` (lowercase)
 
 **Fix 3: Clear browser cache**
 - Hard refresh: Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
@@ -66,8 +66,8 @@ npm run db:seed
 
 **Check login:**
 ```
-✓ john@brewing.com - Has 2 test entries
-✗ admin@brewing.com - Sees all entries (may be empty if fresh DB)
+✓ john@foodbio.com - Has 2 test entries
+✗ admin@foodbio.com - Sees all entries (may be empty if fresh DB)
 ```
 
 **Re-add test entries:**

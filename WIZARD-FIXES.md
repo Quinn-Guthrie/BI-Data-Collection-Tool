@@ -84,7 +84,7 @@
 ## Testing Steps
 
 ### Test 1: Save Draft Immediately
-1. Login: http://localhost:3000/login (`john@brewing.com` / `admin123`)
+1. Login: http://localhost:3000/login (`john@foodbio.com` / `admin123`)
 2. Click "New Entry"
 3. Step 2: Select Country "United States"
 4. Step 3: Select Company "AB InBev", Existing Customer "yes", Go-to-Market "direct", Production "500000"
