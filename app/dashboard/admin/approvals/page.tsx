@@ -22,9 +22,16 @@ export default function ApprovalsPage() {
   const [filter, setFilter] = useState('pending')
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkProcessing, setBulkProcessing] = useState(false)
 
   useEffect(() => {
     loadEntries()
+  }, [filter])
+
+  useEffect(() => {
+    // Clear selections when filter changes
+    setSelectedIds([])
   }, [filter])
 
   const loadEntries = async () => {
@@ -38,6 +45,87 @@ export default function ApprovalsPage() {
       console.error('Failed to load entries:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(entries.map(e => e.id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  const handleSelectOne = (entryId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds([...selectedIds, entryId])
+    } else {
+      setSelectedIds(selectedIds.filter(id => id !== entryId))
+    }
+  }
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return
+
+    if (!confirm(`Approve ${selectedIds.length} selected entries?`)) return
+
+    setBulkProcessing(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const res = await fetch('/api/admin/approvals/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryIds: selectedIds, action: 'approve' }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setSuccess(data.message)
+        setSelectedIds([])
+        loadEntries()
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Failed to approve entries')
+      }
+    } catch (err) {
+      setError('An error occurred')
+    } finally {
+      setBulkProcessing(false)
+    }
+  }
+
+  const handleBulkReject = async () => {
+    if (selectedIds.length === 0) return
+
+    const reason = prompt(`Rejection reason for ${selectedIds.length} entries (will be sent to all account managers):`)
+    if (!reason) return
+
+    setBulkProcessing(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const res = await fetch('/api/admin/approvals/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryIds: selectedIds, action: 'reject', reason }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setSuccess(data.message)
+        setSelectedIds([])
+        loadEntries()
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Failed to reject entries')
+      }
+    } catch (err) {
+      setError('An error occurred')
+    } finally {
+      setBulkProcessing(false)
     }
   }
 
@@ -94,6 +182,9 @@ export default function ApprovalsPage() {
     return <div className="flex items-center justify-center h-64">Loading...</div>
   }
 
+  const allSelected = entries.length > 0 && selectedIds.length === entries.length
+  const someSelected = selectedIds.length > 0 && selectedIds.length < entries.length
+
   return (
     <div className="space-y-6">
       <div>
@@ -137,6 +228,39 @@ export default function ApprovalsPage() {
         </nav>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {filter === 'pending' && selectedIds.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedIds.length} {selectedIds.length === 1 ? 'entry' : 'entries'} selected
+            </span>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Clear selection
+            </button>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleBulkApprove}
+              disabled={bulkProcessing}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium"
+            >
+              {bulkProcessing ? 'Processing...' : 'Approve Selected'}
+            </button>
+            <button
+              onClick={handleBulkReject}
+              disabled={bulkProcessing}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm font-medium"
+            >
+              {bulkProcessing ? 'Processing...' : 'Reject Selected'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Entries Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {entries.length === 0 ? (
@@ -147,6 +271,19 @@ export default function ApprovalsPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                {filter === 'pending' && (
+                  <th className="px-6 py-3 w-12">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={input => {
+                        if (input) input.indeterminate = someSelected
+                      }}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    />
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Segment</th>
@@ -159,6 +296,16 @@ export default function ApprovalsPage() {
             <tbody className="divide-y divide-gray-200">
               {entries.map((entry) => (
                 <tr key={entry.id} className="hover:bg-gray-50">
+                  {filter === 'pending' && (
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(entry.id)}
+                        onChange={(e) => handleSelectOne(entry.id, e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{entry.company.name}</div>
                     {entry.plant && <div className="text-xs text-gray-500">{entry.plant.name}</div>}

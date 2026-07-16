@@ -2,8 +2,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import EntriesTable from '@/components/dashboard/EntriesTable'
+import FilteredEntriesSection from '@/components/dashboard/FilteredEntriesSection'
 import ActivityLog from '@/components/dashboard/ActivityLog'
+import DashboardCharts from '@/components/dashboard/DashboardCharts'
 
 async function getStats(userId: string, role: string) {
   const where =
@@ -132,15 +133,11 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Entries Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Recent Entries
-          </h2>
-        </div>
-        <EntriesTable entries={entries} />
-      </div>
+      {/* Analytics Charts */}
+      <DashboardCharts />
+
+      {/* Filtered Entries Section */}
+      <FilteredEntriesSection initialEntries={entries} />
 
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow">

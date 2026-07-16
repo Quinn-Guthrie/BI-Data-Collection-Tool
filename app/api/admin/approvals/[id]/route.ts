@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, rejectionEmailTemplate, approvalEmailTemplate } from '@/lib/email'
 
 export async function POST(
   request: Request,
@@ -31,6 +32,12 @@ export async function POST(
         reviewedBy: session.user.id,
         reviewedAt: new Date(),
       },
+      include: {
+        accountManager: true,
+        company: true,
+        country: true,
+        segment: true,
+      },
     })
 
     // Create approval record
@@ -57,6 +64,39 @@ export async function POST(
         }),
       },
     })
+
+    // Send email notification
+    const entryName = `${entry.company.name} - ${entry.country.countryName} - ${entry.segment.name}`
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    const editUrl = `${baseUrl}/dashboard/entries/${id}/edit`
+
+    if (action === 'reject' && reason) {
+      const emailContent = rejectionEmailTemplate({
+        userName: entry.accountManager.name,
+        entryName,
+        reason,
+        editUrl,
+      })
+
+      await sendEmail({
+        to: entry.accountManager.email,
+        subject: `Entry Rejected: ${entryName}`,
+        html: emailContent.html,
+        text: emailContent.text,
+      })
+    } else if (action === 'approve') {
+      const emailContent = approvalEmailTemplate({
+        userName: entry.accountManager.name,
+        entryName,
+      })
+
+      await sendEmail({
+        to: entry.accountManager.email,
+        subject: `Entry Approved: ${entryName}`,
+        html: emailContent.html,
+        text: emailContent.text,
+      })
+    }
 
     return NextResponse.json({ success: true, entry })
   } catch (error) {

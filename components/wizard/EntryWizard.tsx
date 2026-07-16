@@ -9,6 +9,7 @@ import Step4Segment from './steps/Step4Segment'
 import Step5Enzymes from './steps/Step5Enzymes'
 import Step6MarketShare from './steps/Step6MarketShare'
 import Step7Review from './steps/Step7Review'
+import { validateAllBeforeFinalize } from '@/lib/validations/wizardValidation'
 
 interface WizardData {
   cycleId: string
@@ -158,6 +159,14 @@ export default function EntryWizard({
   }
 
   const handleFinalize = async () => {
+    // Client-side validation before submitting
+    const validation = validateAllBeforeFinalize(wizardData)
+
+    if (!validation.isValid) {
+      alert(`Please fix the following errors before finalizing:\n\n${validation.errors.join('\n')}`)
+      return
+    }
+
     setLoading(true)
     try {
       const url = isEditMode ? `/api/entries/${entryId}` : '/api/entries'
