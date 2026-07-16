@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20')
-    const isAdmin = session.user.role === 'admin' || session.user.role === 'approver'
+    const isAdmin = session.user.role === 'super_admin' || session.user.role === 'admin' || session.user.role === 'approver'
 
     // Build where clause based on role
     const where = isAdmin

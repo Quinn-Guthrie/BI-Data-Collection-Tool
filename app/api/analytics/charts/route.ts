@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const isAdmin = session.user.role === 'admin' || session.user.role === 'approver'
+    const isAdmin = session.user.role === 'super_admin' || session.user.role === 'admin' || session.user.role === 'approver'
 
     // Build where clause
     const where = isAdmin
