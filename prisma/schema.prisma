@@ -1,0 +1,256 @@
+// Brewing Sales App Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Users and Authentication
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  password   String   // Hashed
+  role       UserRole
+  region     String?
+  subregion  String?
+  canApprove Boolean  @default(false) // Can approve entries for sign-off
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  entries         Entry[]
+  createdCycles   Cycle[]
+  auditLogs       AuditLog[]
+  approvedEntries EntryApproval[]
+}
+
+enum UserRole {
+  admin
+  reviewer
+  approver
+  account_manager
+}
+
+// Reporting Cycles
+model Cycle {
+  id        String      @id @default(cuid())
+  name      String
+  status    CycleStatus @default(open)
+  openedAt  DateTime    @default(now())
+  lockedAt  DateTime?
+  createdBy String
+
+  creator User    @relation(fields: [createdBy], references: [id])
+  entries Entry[]
+
+  @@index([status])
+}
+
+enum CycleStatus {
+  open
+  locked
+}
+
+// Companies
+model Company {
+  id             String   @id @default(cuid())
+  name           String
+  normalizedName String   @unique
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  entries Entry[]
+}
+
+// Geographic Hierarchy
+model Country {
+  id          String   @id @default(cuid())
+  countryName String   @unique
+  subregion   String
+  region      String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  entries Entry[]
+  plants  Plant[]
+}
+
+// Plants (new level in hierarchy)
+model Plant {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?  @unique
+  countryId String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  country Country @relation(fields: [countryId], references: [id])
+  entries Entry[]
+
+  @@index([countryId])
+}
+
+// Segments
+model Segment {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  definition String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  entries Entry[]
+}
+
+// Distributors
+model Distributor {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  entries Entry[]
+}
+
+// Enzyme Categories
+model EnzymeCategory {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  productReference String?
+  helperText       String?
+  sortOrder        Int
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  enzymeValues EntryEnzymeValue[]
+
+  @@index([sortOrder])
+}
+
+// Main Entry Record
+model Entry {
+  id                   String       @id @default(cuid())
+  cycleId              String
+  sourceEntryId        String? // For carry-forward tracking
+  accountManagerUserId String
+  plantId              String? // NEW: Plant level
+  companyId            String
+  subregion            String // NEW: Subregion level
+  region               String
+  countryId            String
+  existingCustomer     String // yes/no
+  goToMarket           String // direct/distributor
+  distributorId        String?
+  productionBeerHlYear Float?
+  segmentId            String
+  productionPercent    Float?
+  confidencePercent    Float?
+  comments             String?
+  rejectionReason      String? // Admin's reason for rejecting entry
+  status               EntryStatus  @default(draft)
+  finalized            Boolean      @default(false)
+  approvalStatus       ApprovalStatus @default(pending)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  finalizedAt          DateTime?
+  submittedForApprovalAt DateTime?
+  reviewedBy           String?
+  reviewedAt           DateTime?
+
+  cycle            Cycle              @relation(fields: [cycleId], references: [id])
+  accountManager   User               @relation(fields: [accountManagerUserId], references: [id])
+  plant            Plant?             @relation(fields: [plantId], references: [id])
+  company          Company            @relation(fields: [companyId], references: [id])
+  country          Country            @relation(fields: [countryId], references: [id])
+  segment          Segment            @relation(fields: [segmentId], references: [id])
+  distributor      Distributor?       @relation(fields: [distributorId], references: [id])
+  enzymeValues     EntryEnzymeValue[]
+  approvals        EntryApproval[]
+  sourceEntry      Entry?             @relation("CarryForward", fields: [sourceEntryId], references: [id], onDelete: SetNull)
+  carriedToEntries Entry[]            @relation("CarryForward")
+
+  @@unique([cycleId, companyId, countryId, segmentId, plantId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([accountManagerUserId])
+  @@index([cycleId])
+}
+
+enum ApprovalStatus {
+  pending
+  submitted
+  approved
+  rejected
+}
+
+enum EntryStatus {
+  not_started
+  carried_over_unconfirmed
+  draft
+  needs_correction
+  ready_for_review
+  finalized
+  locked
+}
+
+// Enzyme Values per Entry
+model EntryEnzymeValue {
+  id                          String  @id @default(cuid())
+  entryId                     String
+  enzymeCategoryId            String
+  usageStatus                 String? // used/not_used/unknown
+  penetrationPercent          Float?
+  iffMarketSharePercent       Float?
+  novonesisMarketSharePercent Float?
+  dsmMarketSharePercent       Float?
+  othersMarketSharePercent    Float?
+  confirmed                   Boolean @default(false)
+  comments                    String?
+
+  entry          Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  enzymeCategory EnzymeCategory @relation(fields: [enzymeCategoryId], references: [id])
+
+  @@unique([entryId, enzymeCategoryId])
+  @@index([entryId])
+}
+
+// Approval Workflow
+model EntryApproval {
+  id          String   @id @default(cuid())
+  entryId     String
+  approvedBy  String
+  status      ApprovalStatus
+  comments    String?
+  approvedAt  DateTime @default(now())
+
+  entry    Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  approver User  @relation(fields: [approvedBy], references: [id])
+
+  @@index([entryId])
+  @@index([approvedBy])
+}
+
+// Enhanced Audit Trail
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String   // created, updated, finalized, approved, rejected
+  changedBy  String
+  changedAt  DateTime @default(now())
+  fieldName  String?  // Which field changed
+  oldValue   String?
+  newValue   String?
+  ipAddress  String?
+  userAgent  String?
+
+  user User @relation(fields: [changedBy], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([changedAt])
+  @@index([changedBy])
+}

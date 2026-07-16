@@ -1,0 +1,4 @@
+Company,Country,Segment,Plant,Existing Customer,Go To Market,Production (HL/year),Production %,Confidence %,Comments
+Heineken,Germany,Normal beer,Munich Plant,yes,direct,50000,100,85,Sample import test data
+Carlsberg Group,United Kingdom,Light beer,,yes,distributor,30000,75,90,
+Anheuser-Busch InBev,United States,Adjunct beer,St. Louis Brewery,no,direct,100000,100,95,Large production facility
