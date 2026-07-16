@@ -8,16 +8,24 @@ import ActivityLog from '@/components/dashboard/ActivityLog'
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
 
-  if (!session || session.user.role !== 'admin') {
+  if (!session || session.user.role !== 'super_admin') {
     redirect('/dashboard')
   }
 
   // Get stats
-  const [userCount, cycleCount, entryCount, activeUsers] = await Promise.all([
+  const [userCount, cycleCount, entryCount, activeUsers, segments] = await Promise.all([
     prisma.user.count(),
     prisma.cycle.count(),
     prisma.entry.count(),
     prisma.user.count({ where: { active: true } }),
+    prisma.businessSegment.findMany({
+      include: {
+        entries: true,
+        cycles: { where: { status: 'open' } },
+        segments: true,
+        enzymeCategories: true,
+      },
+    }),
   ])
 
   const openCycle = await prisma.cycle.findFirst({
@@ -29,6 +37,53 @@ export default async function AdminPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
         <p className="text-gray-600 mt-2">Manage users, cycles, and export data</p>
+      </div>
+
+      {/* Multi-Segment Overview */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+          <svg className="w-6 h-6 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          Multi-Segment Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {segments.map((segment) => (
+            <div key={segment.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center mb-3">
+                <div
+                  className="w-3 h-3 rounded-full mr-2"
+                  style={{ backgroundColor: segment.color }}
+                />
+                <h3 className="font-semibold text-gray-900">{segment.name}</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Entries:</span>
+                  <span className="font-semibold text-gray-900">{segment.entries.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Open Cycles:</span>
+                  <span className="font-semibold text-gray-900">{segment.cycles.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Product Types:</span>
+                  <span className="font-semibold text-gray-900">{segment.segments.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Enzymes:</span>
+                  <span className="font-semibold text-gray-900">{segment.enzymeCategories.length}</span>
+                </div>
+              </div>
+              <Link
+                href={`/dashboard?segment=${segment.slug}`}
+                className="mt-3 block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                View Entries →
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Stats Grid */}

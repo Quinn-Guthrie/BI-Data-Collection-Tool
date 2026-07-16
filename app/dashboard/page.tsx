@@ -9,7 +9,7 @@ import StatsSection from '@/components/dashboard/StatsSection'
 
 async function getStats(userId: string, role: string) {
   const where =
-    role === 'admin' || role === 'approver'
+    role === 'super_admin' || role === 'admin' || role === 'approver'
       ? {} // See all entries
       : { accountManagerUserId: userId } // Only own entries
 
@@ -35,7 +35,7 @@ async function getStats(userId: string, role: string) {
 
 async function getEntries(userId: string, role: string) {
   const where =
-    role === 'admin' || role === 'approver'
+    role === 'super_admin' || role === 'admin' || role === 'approver'
       ? {}
       : { accountManagerUserId: userId }
 
@@ -195,10 +195,10 @@ export default async function DashboardPage() {
         >
           Add New Entry
         </Link>
-        {(session.user.role === 'admin' || session.user.role === 'approver') && (
+        {(session.user.role === 'super_admin' || session.user.role === 'admin' || session.user.role === 'approver') && (
           <Link
             href="/dashboard/admin"
-            className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 font-medium"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-indigo-700 font-medium shadow-md"
           >
             Admin Panel
           </Link>

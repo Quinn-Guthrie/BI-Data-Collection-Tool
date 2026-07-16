@@ -13,6 +13,7 @@ interface User {
 export default function DashboardHeader({ user }: { user: User }) {
   const getRoleBadge = (role: string) => {
     const badges = {
+      super_admin: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
       admin: 'bg-purple-100 text-purple-800',
       approver: 'bg-green-100 text-green-800',
       reviewer: 'bg-blue-100 text-blue-800',
@@ -44,12 +45,12 @@ export default function DashboardHeader({ user }: { user: User }) {
               >
                 New Entry
               </Link>
-              {(user.role === 'admin' || user.role === 'approver') && (
+              {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'approver') && (
                 <Link
                   href="/dashboard/admin"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Admin
+                  Admin Panel
                 </Link>
               )}
             </nav>
