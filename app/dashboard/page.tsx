@@ -5,6 +5,7 @@ import Link from 'next/link'
 import FilteredEntriesSection from '@/components/dashboard/FilteredEntriesSection'
 import ActivityLog from '@/components/dashboard/ActivityLog'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
+import StatsSection from '@/components/dashboard/StatsSection'
 
 async function getStats(userId: string, role: string) {
   const where =
@@ -83,8 +84,11 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      {/* Stats Section */}
+      <StatsSection stats={stats} />
+
+      {/* Old Stats - Remove this entire section */}
+      <div className="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {/* Total Records */}
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
           <div className="flex items-center justify-between">
