@@ -1,4 +1,5 @@
-// Brewing Sales App Database Schema
+// Multi-Segment Sales App Database Schema
+// Supports: Brewing, Bakery, Fresh Dairy, Cheese
 
 generator client {
   provider = "prisma-client-js"
@@ -9,46 +10,104 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Users and Authentication
-model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  name       String
-  password   String   // Hashed
-  role       UserRole
-  region     String?
-  subregion  String?
-  canApprove Boolean  @default(false) // Can approve entries for sign-off
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+// ============================================
+// BUSINESS SEGMENTS (NEW)
+// ============================================
 
+model BusinessSegment {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String   @default("#3b82f6")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userSegments     UserSegment[]
+  cycles           Cycle[]
+  entries          Entry[]
+  enzymeCategories EnzymeCategory[]
+  segments         Segment[]
+
+  @@index([slug])
+  @@index([active])
+}
+
+// ============================================
+// USER-SEGMENT RELATIONSHIP (NEW)
+// ============================================
+
+model UserSegment {
+  id         String      @id @default(cuid())
+  userId     String
+  segmentId  String
+  role       SegmentRole @default(account_manager)
+  assignedAt DateTime    @default(now())
+  assignedBy String?
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segment BusinessSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, segmentId])
+  @@index([userId])
+  @@index([segmentId])
+}
+
+enum SegmentRole {
+  account_manager
+  segment_admin
+}
+
+// ============================================
+// USERS (UPDATED)
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(account_manager)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userSegments    UserSegment[]
   entries         Entry[]
   createdCycles   Cycle[]
   auditLogs       AuditLog[]
   approvedEntries EntryApproval[]
+
+  @@index([role])
+  @@index([active])
 }
 
 enum UserRole {
-  admin
-  reviewer
-  approver
+  super_admin
   account_manager
 }
 
-// Reporting Cycles
+// ============================================
+// REPORTING CYCLES (UPDATED)
+// ============================================
+
 model Cycle {
   id        String      @id @default(cuid())
+  segmentId String
   name      String
   status    CycleStatus @default(open)
   openedAt  DateTime    @default(now())
   lockedAt  DateTime?
   createdBy String
 
-  creator User    @relation(fields: [createdBy], references: [id])
+  segment BusinessSegment @relation(fields: [segmentId], references: [id])
+  creator User            @relation(fields: [createdBy], references: [id])
   entries Entry[]
 
+  @@index([segmentId])
   @@index([status])
+  @@index([createdBy])
 }
 
 enum CycleStatus {
@@ -56,7 +115,10 @@ enum CycleStatus {
   locked
 }
 
-// Companies
+// ============================================
+// LOOKUPS
+// ============================================
+
 model Company {
   id             String   @id @default(cuid())
   name           String
@@ -65,9 +127,10 @@ model Company {
   createdAt      DateTime @default(now())
 
   entries Entry[]
+
+  @@index([active])
 }
 
-// Geographic Hierarchy
 model Country {
   id          String   @id @default(cuid())
   countryName String   @unique
@@ -78,9 +141,10 @@ model Country {
 
   entries Entry[]
   plants  Plant[]
+
+  @@index([active])
 }
 
-// Plants (new level in hierarchy)
 model Plant {
   id        String   @id @default(cuid())
   name      String
@@ -93,20 +157,25 @@ model Plant {
   entries Entry[]
 
   @@index([countryId])
+  @@index([active])
 }
 
-// Segments
 model Segment {
-  id         String   @id @default(cuid())
-  name       String   @unique
-  definition String?
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  id                String   @id @default(cuid())
+  businessSegmentId String
+  name              String
+  definition        String?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
 
-  entries Entry[]
+  businessSegment BusinessSegment @relation(fields: [businessSegmentId], references: [id])
+  entries         Entry[]
+
+  @@unique([businessSegmentId, name])
+  @@index([businessSegmentId])
+  @@index([active])
 }
 
-// Distributors
 model Distributor {
   id        String   @id @default(cuid())
   name      String
@@ -114,53 +183,64 @@ model Distributor {
   createdAt DateTime @default(now())
 
   entries Entry[]
+
+  @@index([active])
 }
 
-// Enzyme Categories
 model EnzymeCategory {
-  id               String   @id @default(cuid())
-  name             String   @unique
-  productReference String?
-  helperText       String?
-  sortOrder        Int
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now())
+  id                String   @id @default(cuid())
+  businessSegmentId String?
+  name              String
+  productReference  String?
+  helperText        String?
+  sortOrder         Int
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
 
-  enzymeValues EntryEnzymeValue[]
+  businessSegment BusinessSegment? @relation(fields: [businessSegmentId], references: [id])
+  enzymeValues    EntryEnzymeValue[]
 
+  @@unique([businessSegmentId, name])
+  @@index([businessSegmentId])
   @@index([sortOrder])
+  @@index([active])
 }
 
-// Main Entry Record
-model Entry {
-  id                   String       @id @default(cuid())
-  cycleId              String
-  sourceEntryId        String? // For carry-forward tracking
-  accountManagerUserId String
-  plantId              String? // NEW: Plant level
-  companyId            String
-  subregion            String // NEW: Subregion level
-  region               String
-  countryId            String
-  existingCustomer     String // yes/no
-  goToMarket           String // direct/distributor
-  distributorId        String?
-  productionBeerHlYear Float?
-  segmentId            String
-  productionPercent    Float?
-  confidencePercent    Float?
-  comments             String?
-  rejectionReason      String? // Admin's reason for rejecting entry
-  status               EntryStatus  @default(draft)
-  finalized            Boolean      @default(false)
-  approvalStatus       ApprovalStatus @default(pending)
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
-  finalizedAt          DateTime?
-  submittedForApprovalAt DateTime?
-  reviewedBy           String?
-  reviewedAt           DateTime?
+// ============================================
+// ENTRIES (UPDATED)
+// ============================================
 
+model Entry {
+  id                     String         @id @default(cuid())
+  businessSegmentId      String
+  cycleId                String
+  sourceEntryId          String?
+  accountManagerUserId   String
+  plantId                String?
+  companyId              String
+  subregion              String
+  region                 String
+  countryId              String
+  existingCustomer       String
+  goToMarket             String
+  distributorId          String?
+  productionBeerHlYear   Float?
+  segmentId              String
+  productionPercent      Float?
+  confidencePercent      Float?
+  comments               String?
+  rejectionReason        String?
+  status                 EntryStatus    @default(draft)
+  finalized              Boolean        @default(false)
+  approvalStatus         ApprovalStatus @default(pending)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  finalizedAt            DateTime?
+  submittedForApprovalAt DateTime?
+  reviewedBy             String?
+  reviewedAt             DateTime?
+
+  businessSegment  BusinessSegment    @relation(fields: [businessSegmentId], references: [id])
   cycle            Cycle              @relation(fields: [cycleId], references: [id])
   accountManager   User               @relation(fields: [accountManagerUserId], references: [id])
   plant            Plant?             @relation(fields: [plantId], references: [id])
@@ -173,7 +253,8 @@ model Entry {
   sourceEntry      Entry?             @relation("CarryForward", fields: [sourceEntryId], references: [id], onDelete: SetNull)
   carriedToEntries Entry[]            @relation("CarryForward")
 
-  @@unique([cycleId, companyId, countryId, segmentId, plantId])
+  @@unique([cycleId, businessSegmentId, companyId, countryId, segmentId, plantId])
+  @@index([businessSegmentId])
   @@index([status])
   @@index([approvalStatus])
   @@index([accountManagerUserId])
@@ -197,12 +278,15 @@ enum EntryStatus {
   locked
 }
 
-// Enzyme Values per Entry
+// ============================================
+// ENTRY DETAILS
+// ============================================
+
 model EntryEnzymeValue {
   id                          String  @id @default(cuid())
   entryId                     String
   enzymeCategoryId            String
-  usageStatus                 String? // used/not_used/unknown
+  usageStatus                 String?
   penetrationPercent          Float?
   iffMarketSharePercent       Float?
   novonesisMarketSharePercent Float?
@@ -218,14 +302,13 @@ model EntryEnzymeValue {
   @@index([entryId])
 }
 
-// Approval Workflow
 model EntryApproval {
-  id          String   @id @default(cuid())
-  entryId     String
-  approvedBy  String
-  status      ApprovalStatus
-  comments    String?
-  approvedAt  DateTime @default(now())
+  id         String         @id @default(cuid())
+  entryId    String
+  approvedBy String
+  status     ApprovalStatus
+  comments   String?
+  approvedAt DateTime       @default(now())
 
   entry    Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   approver User  @relation(fields: [approvedBy], references: [id])
@@ -234,15 +317,18 @@ model EntryApproval {
   @@index([approvedBy])
 }
 
-// Enhanced Audit Trail
+// ============================================
+// AUDIT LOG
+// ============================================
+
 model AuditLog {
   id         String   @id @default(cuid())
   entityType String
   entityId   String
-  action     String   // created, updated, finalized, approved, rejected
+  action     String
   changedBy  String
   changedAt  DateTime @default(now())
-  fieldName  String?  // Which field changed
+  fieldName  String?
   oldValue   String?
   newValue   String?
   ipAddress  String?

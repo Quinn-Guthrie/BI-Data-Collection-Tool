@@ -9,20 +9,129 @@ async function main() {
   // Hash password for users
   const hashedPassword = await bcrypt.hash('admin123', 10)
 
-  // Create Admin User Only
+  // Create 4 Business Segments
+  const brewingSegment = await prisma.businessSegment.upsert({
+    where: { slug: 'brewing' },
+    update: {},
+    create: {
+      name: 'Brewing',
+      slug: 'brewing',
+      description: 'Beer and brewing sales data',
+      color: '#3b82f6',
+    },
+  })
+
+  const bakerySegment = await prisma.businessSegment.upsert({
+    where: { slug: 'bakery' },
+    update: {},
+    create: {
+      name: 'Bakery',
+      slug: 'bakery',
+      description: 'Bakery and bread sales data',
+      color: '#f59e0b',
+    },
+  })
+
+  const dairySegment = await prisma.businessSegment.upsert({
+    where: { slug: 'dairy' },
+    update: {},
+    create: {
+      name: 'Fresh Dairy',
+      slug: 'dairy',
+      description: 'Fresh dairy products sales data',
+      color: '#10b981',
+    },
+  })
+
+  const cheeseSegment = await prisma.businessSegment.upsert({
+    where: { slug: 'cheese' },
+    update: {},
+    create: {
+      name: 'Cheese',
+      slug: 'cheese',
+      description: 'Cheese products sales data',
+      color: '#f97316',
+    },
+  })
+
+  console.log('✅ Business segments created (Brewing, Bakery, Fresh Dairy, Cheese)')
+
+  // Create Super Admin User
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@brewing.com' },
     update: {},
     create: {
       email: 'admin@brewing.com',
-      name: 'Admin User',
+      name: 'Super Admin',
       password: hashedPassword,
-      role: 'admin',
-      region: null,
+      role: 'super_admin',
     },
   })
 
-  console.log('✅ Admin user created')
+  console.log('✅ Super admin user created')
+
+  // Grant admin access to all 4 segments as segment_admin
+  await prisma.userSegment.upsert({
+    where: {
+      userId_segmentId: {
+        userId: adminUser.id,
+        segmentId: brewingSegment.id
+      }
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      segmentId: brewingSegment.id,
+      role: 'segment_admin',
+    },
+  })
+
+  await prisma.userSegment.upsert({
+    where: {
+      userId_segmentId: {
+        userId: adminUser.id,
+        segmentId: bakerySegment.id
+      }
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      segmentId: bakerySegment.id,
+      role: 'segment_admin',
+    },
+  })
+
+  await prisma.userSegment.upsert({
+    where: {
+      userId_segmentId: {
+        userId: adminUser.id,
+        segmentId: dairySegment.id
+      }
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      segmentId: dairySegment.id,
+      role: 'segment_admin',
+    },
+  })
+
+  await prisma.userSegment.upsert({
+    where: {
+      userId_segmentId: {
+        userId: adminUser.id,
+        segmentId: cheeseSegment.id
+      }
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      segmentId: cheeseSegment.id,
+      role: 'segment_admin',
+    },
+  })
+
+  console.log('✅ Admin granted access to all segments')
 
   // Create Countries with Subregions
   const countries = [
@@ -96,76 +205,94 @@ async function main() {
 
   console.log('✅ Plants created')
 
-  // Create Segments
-  const segments = [
-    { name: 'Normal beer', definition: 'Standard beer' },
-    { name: 'Light beer', definition: 'RDF above 75%' },
-    { name: 'Adjunct beer', definition: '30 to 50% adjuncts' },
+  // Create Product Segments for Brewing
+  const brewingProductSegments = [
+    { name: 'Normal beer', definition: 'Standard beer', businessSegmentId: brewingSegment.id },
+    { name: 'Light beer', definition: 'RDF above 75%', businessSegmentId: brewingSegment.id },
+    { name: 'Adjunct beer', definition: '30 to 50% adjuncts', businessSegmentId: brewingSegment.id },
   ]
 
-  for (const segment of segments) {
+  for (const segment of brewingProductSegments) {
     await prisma.segment.upsert({
-      where: { name: segment.name },
+      where: {
+        businessSegmentId_name: {
+          businessSegmentId: segment.businessSegmentId,
+          name: segment.name
+        }
+      },
       update: {},
       create: segment,
     })
   }
 
-  console.log('✅ Segments created')
+  console.log('✅ Product segments created for Brewing')
 
-  // Create Enzyme Categories
-  const enzymeCategories = [
+  // Create Enzyme Categories for Brewing
+  const brewingEnzymeCategories = [
     {
       name: 'Efficient starch liquefaction enzymes',
       productReference: 'AMYLEX',
       sortOrder: 1,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Optimize raw material flexibility and FAN generation enzymes',
       productReference: 'ALPHALASE',
       sortOrder: 2,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Boost mash separation and beer filtration enzymes',
       productReference: 'LAMINEX',
       sortOrder: 3,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Improve or decrease attenuation, %RDF, enzymes',
       productReference: 'DIAZYME',
       sortOrder: 4,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Accelerate maturation via diacetyl control enzymes',
       productReference: 'AA 4000',
       sortOrder: 5,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Malting enhancement enzymes',
       productReference: 'LAMINEX',
       sortOrder: 6,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Enhance colloidal stability enzymes',
       productReference: 'BCLEAR',
       sortOrder: 7,
+      businessSegmentId: brewingSegment.id,
     },
     {
       name: 'Other enzymes',
       productReference: '',
       sortOrder: 8,
+      businessSegmentId: brewingSegment.id,
     },
   ]
 
-  for (const enzyme of enzymeCategories) {
+  for (const enzyme of brewingEnzymeCategories) {
     await prisma.enzymeCategory.upsert({
-      where: { name: enzyme.name },
+      where: {
+        businessSegmentId_name: {
+          businessSegmentId: enzyme.businessSegmentId!,
+          name: enzyme.name
+        }
+      },
       update: {},
       create: enzyme,
     })
   }
 
-  console.log('✅ Enzyme categories created')
+  console.log('✅ Enzyme categories created for Brewing')
 
   // Create Companies
   const companies = [
@@ -184,16 +311,17 @@ async function main() {
 
   console.log('✅ Companies created')
 
-  // Create Initial Cycle
+  // Create Initial Cycle for Brewing segment
   const cycle = await prisma.cycle.create({
     data: {
-      name: '2026 Annual',
+      name: '2026 Annual - Brewing',
       status: 'open',
       createdBy: adminUser.id,
+      segmentId: brewingSegment.id,
     },
   })
 
-  console.log('✅ Initial cycle created')
+  console.log('✅ Initial cycle created for Brewing')
 
   console.log('✨ Seeding complete!')
 }
