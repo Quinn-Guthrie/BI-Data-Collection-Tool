@@ -29,7 +29,7 @@ export default function DashboardHeader({ user }: { user: User }) {
           <div className="flex items-center space-x-8">
             <Link href="/dashboard" className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">
-                Brewing Sales Exercise
+                Food Biosciences Data Collection
               </h1>
             </Link>
             <nav className="hidden md:flex space-x-4">

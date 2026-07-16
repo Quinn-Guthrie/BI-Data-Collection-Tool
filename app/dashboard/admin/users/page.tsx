@@ -273,6 +273,12 @@ export default function UsersPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <Link
+                    href={`/dashboard/admin/users/${user.id}/edit`}
+                    className="text-indigo-600 hover:text-indigo-800 mr-3"
+                  >
+                    Edit
+                  </Link>
                   <button
                     onClick={() => toggleUserStatus(user.id, user.active)}
                     className="text-blue-600 hover:text-blue-800 mr-3"

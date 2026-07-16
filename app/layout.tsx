@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Brewing Sales Exercise",
-  description: "Data collection app for brewing sales analysis",
+  title: "Food Biosciences Data Collection",
+  description: "Multi-segment data collection tool for Food Biosciences",
 };
 
 export default function RootLayout({
