@@ -186,33 +186,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Progress Bar */}
-      {stats.total > 0 && (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Overall Progress</h3>
-            <span className="text-2xl font-bold text-gray-900">
-              {Math.round((stats.finalized / stats.total) * 100)}%
-            </span>
-          </div>
-          <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-              style={{ width: `${(stats.finalized / stats.total) * 100}%` }}
-            >
-              {stats.finalized > 0 && (
-                <span className="text-xs font-bold text-white">
-                  {stats.finalized} / {stats.total}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-between mt-2 text-xs text-gray-500">
-            <span>0 entries</span>
-            <span>{stats.total} entries</span>
-          </div>
-        </div>
-      )}
 
       {/* Actions */}
       <div className="flex gap-4">
