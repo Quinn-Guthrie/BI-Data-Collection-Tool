@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 
     const {
       cycleId,
+      businessSegmentId,
       plantId,
       companyId,
       countryId,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
 
     // These fields are always required (database constraints)
     if (!cycleId) errors.push('Cycle is required')
+    if (!businessSegmentId) errors.push('Business segment is required')
     if (!companyId) errors.push('Company is required')
     if (!countryId) errors.push('Country is required')
     if (!region) errors.push('Region is required')
@@ -94,22 +96,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 })
     }
 
-    // Get the Brewing segment ID (only Brewing is active for data collection)
-    const brewingSegment = await prisma.businessSegment.findFirst({
-      where: { slug: 'brewing' }
+    // Verify business segment exists
+    const businessSegment = await prisma.businessSegment.findUnique({
+      where: { id: businessSegmentId }
     })
 
-    if (!brewingSegment) {
+    if (!businessSegment) {
       return NextResponse.json(
-        { error: 'Brewing segment not found' },
-        { status: 500 }
+        { error: 'Business segment not found' },
+        { status: 404 }
       )
     }
 
     // Check for duplicate
     const existing = await prisma.entry.findFirst({
       where: {
-        businessSegmentId: brewingSegment.id,
+        businessSegmentId,
         cycleId,
         companyId,
         countryId,
@@ -137,7 +139,7 @@ export async function POST(request: Request) {
     // Create entry
     const entry = await prisma.entry.create({
       data: {
-        businessSegmentId: brewingSegment.id, // Always Brewing for now
+        businessSegmentId, // Use provided business segment
         cycleId,
         accountManagerUserId: session.user.id,
         plantId: plantId || null,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Step0CycleSelection from './steps/Step0CycleSelection'
 import Step1Account from './steps/Step1Account'
 import Step2Plant from './steps/Step2Plant'
 import Step3Company from './steps/Step3Company'
@@ -13,6 +14,7 @@ import { validateAllBeforeFinalize } from '@/lib/validations/wizardValidation'
 
 interface WizardData {
   cycleId: string
+  businessSegmentId?: string
   accountManagerUserId: string
   plantId?: string | null
   companyId?: string
@@ -40,13 +42,14 @@ export default function EntryWizard({
   existingEntry?: any
 }) {
   const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(isEditMode ? 1 : 0)
   const [loading, setLoading] = useState(false)
   const [cycle, setCycle] = useState<any>(null)
   const isEditMode = !!entryId
 
   const [wizardData, setWizardData] = useState<WizardData>({
     cycleId: '',
+    businessSegmentId: existingEntry?.businessSegmentId || '',
     accountManagerUserId: userId,
     enzymeValues: {},
   })

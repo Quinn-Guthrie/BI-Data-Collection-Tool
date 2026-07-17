@@ -59,27 +59,60 @@ export default async function DashboardPage() {
 
   const stats = await getStats(session.user.id, session.user.role)
   const entries = await getEntries(session.user.id, session.user.role)
-  const currentCycle = await prisma.cycle.findFirst({
-    where: { status: 'open' },
-  })
+
+  // Get open cycles for user's segments
+  let openCycles
+  if (session.user.role === 'super_admin') {
+    openCycles = await prisma.cycle.findMany({
+      where: { status: 'open' },
+      include: { businessSegment: true },
+    })
+  } else {
+    const userSegments = await prisma.userSegment.findMany({
+      where: { userId: session.user.id },
+      select: { segmentId: true },
+    })
+    const segmentIds = userSegments.map(us => us.segmentId)
+
+    openCycles = await prisma.cycle.findMany({
+      where: {
+        status: 'open',
+        businessSegmentId: { in: segmentIds },
+      },
+      include: { businessSegment: true },
+    })
+  }
 
   return (
     <div className="space-y-6">
       {/* Cycle Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-blue-900">
-              Current Cycle: {currentCycle?.name || 'No active cycle'}
-            </h2>
-            <p className="text-sm text-blue-700">
-              Opened {currentCycle?.openedAt && new Date(currentCycle.openedAt).toLocaleDateString()}
-            </p>
-          </div>
-          {currentCycle && (
-            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-              Open
-            </span>
+        <div>
+          <h2 className="text-lg font-semibold text-blue-900 mb-2">
+            Active Cycles
+          </h2>
+          {openCycles.length === 0 ? (
+            <p className="text-sm text-blue-700">No active cycles</p>
+          ) : (
+            <div className="space-y-2">
+              {openCycles.map(cycle => (
+                <div key={cycle.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: cycle.businessSegment.color }}
+                    />
+                    <div>
+                      <span className="font-medium text-blue-900">{cycle.businessSegment.name}:</span>{' '}
+                      <span className="text-blue-800">{cycle.name}</span>
+                    </div>
+                  </div>
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                    Open
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

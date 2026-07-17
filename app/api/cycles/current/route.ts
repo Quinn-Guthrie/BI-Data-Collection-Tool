@@ -1,39 +1,51 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // Get Brewing segment (only active segment for data collection)
-    const brewingSegment = await prisma.businessSegment.findFirst({
-      where: { slug: 'brewing' }
-    })
+    const session = await getServerSession(authOptions)
 
-    if (!brewingSegment) {
-      return NextResponse.json(
-        { error: 'Brewing segment not found' },
-        { status: 500 }
-      )
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get open cycle for Brewing segment only
-    const cycle = await prisma.cycle.findFirst({
+    // Super admin sees all open cycles
+    if (session.user.role === 'super_admin') {
+      const cycles = await prisma.cycle.findMany({
+        where: { status: 'open' },
+        include: {
+          businessSegment: true,
+        },
+      })
+
+      return NextResponse.json(cycles)
+    }
+
+    // Regular users see cycles for their assigned segments
+    const userSegments = await prisma.userSegment.findMany({
+      where: { userId: session.user.id },
+      select: { segmentId: true },
+    })
+
+    const segmentIds = userSegments.map(us => us.segmentId)
+
+    const cycles = await prisma.cycle.findMany({
       where: {
         status: 'open',
-        segmentId: brewingSegment.id,
+        businessSegmentId: { in: segmentIds },
+      },
+      include: {
+        businessSegment: true,
       },
     })
 
-    if (!cycle) {
-      return NextResponse.json(
-        { error: 'No active Brewing cycle found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(cycle)
+    return NextResponse.json(cycles)
   } catch (error) {
+    console.error('Error fetching cycles:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch cycle' },
+      { error: 'Failed to fetch cycles' },
       { status: 500 }
     )
   }
