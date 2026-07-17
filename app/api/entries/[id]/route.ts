@@ -84,6 +84,23 @@ export async function PUT(
         errors.push('Confidence percentage is required')
       }
 
+      // Check if this is a carried-over entry that needs confirmation
+      if (existingEntry.status === 'carried_over_unconfirmed') {
+        if (!enzymeValues || Object.keys(enzymeValues).length === 0) {
+          errors.push('All carried-over values must be confirmed before finalizing')
+        } else {
+          // Check that all enzyme values are confirmed
+          const unconfirmedValues = Object.values(enzymeValues).filter(
+            (value: any) => !value.confirmed
+          )
+          if (unconfirmedValues.length > 0) {
+            errors.push(
+              `${unconfirmedValues.length} enzyme value(s) must be confirmed before finalizing`
+            )
+          }
+        }
+      }
+
       // Validate enzyme values
       if (enzymeValues && Object.keys(enzymeValues).length > 0) {
         Object.entries(enzymeValues).forEach(([enzymeId, value]: [string, any]) => {

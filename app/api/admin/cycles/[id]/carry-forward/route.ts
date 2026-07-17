@@ -14,115 +14,147 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id: sourceCycleId } = await params
-    const body = await request.json()
-    const { targetCycleId } = body
+    const { id: newCycleId } = await params
 
-    if (!targetCycleId) {
+    // Get the new cycle
+    const newCycle = await prisma.cycle.findUnique({
+      where: { id: newCycleId },
+      include: { businessSegment: true },
+    })
+
+    if (!newCycle) {
+      return NextResponse.json({ error: 'Cycle not found' }, { status: 404 })
+    }
+
+    if (newCycle.status !== 'open') {
       return NextResponse.json(
-        { error: 'Target cycle ID is required' },
+        { error: 'Can only carry forward to open cycles' },
         { status: 400 }
       )
     }
 
-    // Get all finalized entries from source cycle
-    const sourceEntries = await prisma.entry.findMany({
+    // Check if this cycle already has entries
+    const existingEntries = await prisma.entry.count({
+      where: { cycleId: newCycleId },
+    })
+
+    if (existingEntries > 0) {
+      return NextResponse.json(
+        { error: 'Cycle already has entries. Cannot carry forward.' },
+        { status: 400 }
+      )
+    }
+
+    // Find the most recent locked cycle in the same business segment
+    const previousCycle = await prisma.cycle.findFirst({
       where: {
-        cycleId: sourceCycleId,
-        finalized: true,
+        businessSegmentId: newCycle.businessSegmentId,
+        status: 'locked',
+        id: { not: newCycleId },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!previousCycle) {
+      return NextResponse.json(
+        { error: 'No previous locked cycle found to carry forward from' },
+        { status: 404 }
+      )
+    }
+
+    // Get all finalized entries from previous cycle
+    const previousEntries = await prisma.entry.findMany({
+      where: {
+        cycleId: previousCycle.id,
+        status: 'finalized',
       },
       include: {
         enzymeValues: true,
+        segments: true,
       },
     })
 
-    let copiedCount = 0
+    if (previousEntries.length === 0) {
+      return NextResponse.json(
+        { error: 'No finalized entries found in previous cycle' },
+        { status: 404 }
+      )
+    }
 
-    // Copy each entry to the new cycle
-    for (const sourceEntry of sourceEntries) {
-      // Check if entry already exists in target cycle
-      const existingEntry = await prisma.entry.findFirst({
-        where: {
-          cycleId: targetCycleId,
-          companyId: sourceEntry.companyId,
-          countryId: sourceEntry.countryId,
-          segmentId: sourceEntry.segmentId,
-          plantId: sourceEntry.plantId,
-        },
-      })
+    // Clone entries
+    let clonedCount = 0
 
-      if (existingEntry) {
-        continue // Skip if already exists
-      }
-
+    for (const oldEntry of previousEntries) {
       // Create new entry
       const newEntry = await prisma.entry.create({
         data: {
-          cycleId: targetCycleId,
-          sourceEntryId: sourceEntry.id,
-          accountManagerUserId: sourceEntry.accountManagerUserId,
-          plantId: sourceEntry.plantId,
-          companyId: sourceEntry.companyId,
-          countryId: sourceEntry.countryId,
-          region: sourceEntry.region,
-          subregion: sourceEntry.subregion,
-          existingCustomer: sourceEntry.existingCustomer,
-          goToMarket: sourceEntry.goToMarket,
-          distributorId: sourceEntry.distributorId,
-          productionBeerHlYear: sourceEntry.productionBeerHlYear,
-          segmentId: sourceEntry.segmentId,
-          productionPercent: sourceEntry.productionPercent,
-          confidencePercent: null, // Reset confidence
-          comments: null, // Reset comments
+          cycleId: newCycleId,
+          businessSegmentId: newCycle.businessSegmentId,
+          accountManagerUserId: oldEntry.accountManagerUserId,
+          companyId: oldEntry.companyId,
+          countryId: oldEntry.countryId,
+          plantId: oldEntry.plantId,
+          isExistingCustomer: oldEntry.isExistingCustomer,
+          goToMarket: oldEntry.goToMarket,
+          distributorId: oldEntry.distributorId,
+          productionHlPerYear: oldEntry.productionHlPerYear,
           status: 'carried_over_unconfirmed',
-          finalized: false,
-          approvalStatus: 'pending',
-          finalizedAt: null,
+          sourceEntryId: oldEntry.id,
+          // DO NOT copy: confidencePercent, comments, finalizedAt, approvalStatus
         },
       })
 
-      // Copy enzyme values with confirmed=false
-      if (sourceEntry.enzymeValues && sourceEntry.enzymeValues.length > 0) {
-        const enzymeValueData = sourceEntry.enzymeValues.map((ev) => ({
-          entryId: newEntry.id,
-          enzymeCategoryId: ev.enzymeCategoryId,
-          usageStatus: ev.usageStatus,
-          penetrationPercent: ev.penetrationPercent,
-          iffMarketSharePercent: ev.iffMarketSharePercent,
-          novonesisMarketSharePercent: ev.novonesisMarketSharePercent,
-          dsmMarketSharePercent: ev.dsmMarketSharePercent,
-          othersMarketSharePercent: ev.othersMarketSharePercent,
-          confirmed: false, // Must be confirmed by user
-        }))
-
-        await prisma.entryEnzymeValue.createMany({
-          data: enzymeValueData,
+      // Clone product segments
+      for (const oldSegment of oldEntry.segments) {
+        await prisma.entrySegment.create({
+          data: {
+            entryId: newEntry.id,
+            segmentId: oldSegment.segmentId,
+            productionPercent: oldSegment.productionPercent,
+          },
         })
       }
 
-      copiedCount++
+      // Clone enzyme values with confirmed: false
+      for (const oldEnzyme of oldEntry.enzymeValues) {
+        await prisma.entryEnzymeValue.create({
+          data: {
+            entryId: newEntry.id,
+            enzymeCategoryId: oldEnzyme.enzymeCategoryId,
+            usageStatus: oldEnzyme.usageStatus,
+            penetrationPercent: oldEnzyme.penetrationPercent,
+            iffPercent: oldEnzyme.iffPercent,
+            novonesisDsmPercent: oldEnzyme.novonesisDsmPercent,
+            otherPercent: oldEnzyme.otherPercent,
+            confirmed: false, // Must be confirmed by user
+          },
+        })
+      }
+
+      clonedCount++
     }
 
     // Create audit log
     await prisma.auditLog.create({
       data: {
         entityType: 'Cycle',
-        entityId: targetCycleId,
+        entityId: newCycleId,
         action: 'carry_forward',
         changedBy: session.user.id,
         newValue: JSON.stringify({
-          sourceCycleId,
-          targetCycleId,
-          entriesCopied: copiedCount,
-          carriedForwardBy: session.user.email,
+          fromCycle: previousCycle.name,
+          entriesCloned: clonedCount,
+          performedBy: session.user.email,
         }),
       },
     })
 
     return NextResponse.json({
       success: true,
-      message: `Carried forward ${copiedCount} entries`,
-      count: copiedCount,
+      message: `Successfully carried forward ${clonedCount} entries from "${previousCycle.name}"`,
+      clonedCount,
+      fromCycle: previousCycle.name,
+      toCycle: newCycle.name,
     })
   } catch (error) {
     console.error('Error carrying forward entries:', error)

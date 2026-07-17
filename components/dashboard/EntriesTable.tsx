@@ -7,6 +7,7 @@ type Entry = {
   approvalStatus: string
   confidencePercent: number | null
   rejectionReason: string | null
+  sourceEntryId: string | null
   company: { name: string }
   country: { countryName: string }
   segment: { name: string }
@@ -92,13 +93,22 @@ export default function EntriesTable({ entries }: { entries: Entry[] }) {
                   {entry.segment.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
-                      entry.status
-                    )}`}
-                  >
-                    {entry.status.replace(/_/g, ' ')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {entry.status === 'carried_over_unconfirmed' && (
+                      <span className="text-blue-600" title="Carried forward from previous cycle">
+                        📋
+                      </span>
+                    )}
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
+                        entry.status
+                      )}`}
+                    >
+                      {entry.status === 'carried_over_unconfirmed'
+                        ? 'Needs Confirmation'
+                        : entry.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

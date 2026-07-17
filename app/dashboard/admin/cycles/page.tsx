@@ -20,7 +20,6 @@ export default function CyclesPage() {
   const [showModal, setShowModal] = useState(false)
   const [showCarryForwardModal, setShowCarryForwardModal] = useState(false)
   const [newCycleName, setNewCycleName] = useState('')
-  const [carryForwardFrom, setCarryForwardFrom] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -67,7 +66,6 @@ export default function CyclesPage() {
         // Ask if they want to carry forward
         const lockedCycles = cycles.filter(c => c.status === 'locked')
         if (lockedCycles.length > 0) {
-          setCarryForwardFrom(lockedCycles[0].id)
           setShowCarryForwardModal(true)
         }
       } else {
@@ -81,8 +79,6 @@ export default function CyclesPage() {
   }
 
   const handleCarryForward = async () => {
-    if (!carryForwardFrom) return
-
     setError('')
     setSuccess('')
     setProcessing(true)
@@ -91,19 +87,19 @@ export default function CyclesPage() {
       const targetCycle = cycles.find(c => c.status === 'open')
       if (!targetCycle) {
         setError('No open cycle found')
+        setProcessing(false)
         return
       }
 
-      const res = await fetch(`/api/admin/cycles/${carryForwardFrom}/carry-forward`, {
+      // Call carry-forward on the NEW cycle (not the old one)
+      const res = await fetch(`/api/admin/cycles/${targetCycle.id}/carry-forward`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetCycleId: targetCycle.id }),
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        setSuccess(`Successfully carried forward ${data.count} entries!`)
+        setSuccess(`Successfully carried forward ${data.clonedCount} entries from "${data.fromCycle}"!`)
         setShowCarryForwardModal(false)
         loadCycles()
       } else {
@@ -307,51 +303,37 @@ export default function CyclesPage() {
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Carry Forward Data?</h2>
             <p className="text-gray-600 mb-4">
-              Would you like to carry forward finalized entries from a previous cycle?
+              This will copy all finalized entries from the most recent locked cycle in this segment.
+              Users will need to confirm each value before finalizing.
             </p>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Copy from cycle:
-                </label>
-                <select
-                  value={carryForwardFrom}
-                  onChange={(e) => setCarryForwardFrom(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                >
-                  {lockedCycles.map((cycle) => (
-                    <option key={cycle.id} value={cycle.id}>
-                      {cycle.name} ({cycle._count.entries} entries)
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm mb-4">
+              <strong>Note:</strong> The system will automatically find and copy from the most recent locked cycle.
+            </div>
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleCarryForward}
-                  disabled={processing}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                >
-                  {processing ? 'Processing...' : 'Carry Forward'}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowCarryForwardModal(false)
-                    setError('')
-                  }}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
-                >
-                  Skip
-                </button>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+                {error}
               </div>
+            )}
+
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCarryForward}
+                disabled={processing}
+                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {processing ? 'Processing...' : 'Carry Forward'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCarryForwardModal(false)
+                  setError('')
+                }}
+                className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
+              >
+                Skip
+              </button>
             </div>
           </div>
         </div>
