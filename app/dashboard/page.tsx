@@ -65,7 +65,7 @@ export default async function DashboardPage() {
   if (session.user.role === 'super_admin') {
     openCycles = await prisma.cycle.findMany({
       where: { status: 'open' },
-      include: { businessSegment: true },
+      include: { segment: true },
     })
   } else {
     const userSegments = await prisma.userSegment.findMany({
@@ -77,9 +77,9 @@ export default async function DashboardPage() {
     openCycles = await prisma.cycle.findMany({
       where: {
         status: 'open',
-        businessSegmentId: { in: segmentIds },
+        segmentId: { in: segmentIds },
       },
-      include: { businessSegment: true },
+      include: { segment: true },
     })
   }
 
@@ -100,10 +100,10 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: cycle.businessSegment.color }}
+                      style={{ backgroundColor: cycle.segment.color }}
                     />
                     <div>
-                      <span className="font-medium text-blue-900">{cycle.businessSegment.name}:</span>{' '}
+                      <span className="font-medium text-blue-900">{cycle.segment.name}:</span>{' '}
                       <span className="text-blue-800">{cycle.name}</span>
                     </div>
                   </div>

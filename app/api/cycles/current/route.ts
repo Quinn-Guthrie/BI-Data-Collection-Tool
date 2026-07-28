@@ -16,7 +16,7 @@ export async function GET() {
       const cycles = await prisma.cycle.findMany({
         where: { status: 'open' },
         include: {
-          businessSegment: true,
+          segment: true,
         },
       })
 
@@ -34,10 +34,10 @@ export async function GET() {
     const cycles = await prisma.cycle.findMany({
       where: {
         status: 'open',
-        businessSegmentId: { in: segmentIds },
+        segmentId: { in: segmentIds },
       },
       include: {
-        businessSegment: true,
+        segment: true,
       },
     })
 
