@@ -6,6 +6,7 @@ import FilteredEntriesSection from '@/components/dashboard/FilteredEntriesSectio
 import ActivityLog from '@/components/dashboard/ActivityLog'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
 import StatsSection from '@/components/dashboard/StatsSection'
+import ChartsSection from '@/components/dashboard/ChartsSection'
 
 async function getStats(userId: string, role: string) {
   const where =
@@ -53,12 +54,156 @@ async function getEntries(userId: string, role: string) {
   })
 }
 
+async function getChartData(userId: string, role: string) {
+  const where =
+    role === 'super_admin' || role === 'admin' || role === 'approver'
+      ? {}
+      : { accountManagerUserId: userId }
+
+  // Get entries by segment
+  const entriesBySegment = await prisma.entry.groupBy({
+    by: ['businessSegmentId'],
+    where,
+    _count: { id: true },
+  })
+
+  const segments = await prisma.businessSegment.findMany()
+  const segmentData = await Promise.all(
+    entriesBySegment.map(async (item) => {
+      const segment = segments.find((s) => s.id === item.businessSegmentId)
+      return {
+        name: segment?.name || 'Unknown',
+        value: item._count.id,
+        color: segment?.color || '#gray',
+      }
+    })
+  )
+
+  // Get entries by status
+  const entriesByStatus = await prisma.entry.groupBy({
+    by: ['status'],
+    where,
+    _count: { id: true },
+  })
+
+  const statusColors: Record<string, string> = {
+    not_started: '#9ca3af',
+    draft: '#f59e0b',
+    carried_over_unconfirmed: '#3b82f6',
+    finalized: '#10b981',
+  }
+
+  const statusLabels: Record<string, string> = {
+    not_started: 'Not Started',
+    draft: 'Draft',
+    carried_over_unconfirmed: 'Needs Confirmation',
+    finalized: 'Finalized',
+  }
+
+  const statusData = entriesByStatus.map((item) => ({
+    name: statusLabels[item.status] || item.status,
+    value: item._count.id,
+    color: statusColors[item.status] || '#gray',
+  }))
+
+  // Get top users
+  const topUsers = await prisma.entry.groupBy({
+    by: ['accountManagerUserId'],
+    where,
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } },
+    take: 10,
+  })
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: topUsers.map((u) => u.accountManagerUserId) } },
+  })
+
+  const topUsersData = topUsers.map((item) => {
+    const user = users.find((u) => u.id === item.accountManagerUserId)
+    return {
+      name: user?.name || 'Unknown',
+      entries: item._count.id,
+    }
+  })
+
+  // Get confidence distribution
+  const allEntries = await prisma.entry.findMany({
+    where,
+    select: { confidencePercent: true },
+  })
+
+  const confidenceRanges = [
+    { range: '0-20%', count: 0 },
+    { range: '21-40%', count: 0 },
+    { range: '41-60%', count: 0 },
+    { range: '61-80%', count: 0 },
+    { range: '81-100%', count: 0 },
+  ]
+
+  allEntries.forEach((entry) => {
+    const conf = entry.confidencePercent || 0
+    if (conf <= 20) confidenceRanges[0].count++
+    else if (conf <= 40) confidenceRanges[1].count++
+    else if (conf <= 60) confidenceRanges[2].count++
+    else if (conf <= 80) confidenceRanges[3].count++
+    else confidenceRanges[4].count++
+  })
+
+  // Get completion trend (last 7 days)
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+  const completionTrend = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0))
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999))
+
+    const completed = await prisma.entry.count({
+      where: {
+        ...where,
+        status: 'finalized',
+        finalizedAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    })
+
+    const drafted = await prisma.entry.count({
+      where: {
+        ...where,
+        status: 'draft',
+        updatedAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    })
+
+    completionTrend.push({ date: dateStr, completed, drafted })
+  }
+
+  return {
+    entriesBySegment: segmentData,
+    entriesByStatus: statusData,
+    topUsers: topUsersData,
+    confidenceDistribution: confidenceRanges,
+    completionTrend,
+  }
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) return null
 
   const stats = await getStats(session.user.id, session.user.role)
   const entries = await getEntries(session.user.id, session.user.role)
+  const chartData = await getChartData(session.user.id, session.user.role)
 
   // Get open cycles for user's segments
   let openCycles
@@ -239,7 +384,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Analytics Charts */}
-      <DashboardCharts />
+      <ChartsSection data={chartData} />
 
       {/* Filtered Entries Section */}
       <FilteredEntriesSection initialEntries={entries} />
