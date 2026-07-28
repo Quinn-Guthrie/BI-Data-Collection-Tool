@@ -14,15 +14,17 @@
 3. **[SESSION-SUMMARY.md](SESSION-SUMMARY.md)** - Complete work log
 
 ### Want to Test?
-- **[CARRY-FORWARD-READY.txt](CARRY-FORWARD-READY.txt)** - Quick 15-minute test guide
-- **[CARRY-FORWARD-COMPLETE.md](CARRY-FORWARD-COMPLETE.md)** - Full testing documentation
+- **[docs/guides/CARRY-FORWARD-READY.txt](docs/guides/CARRY-FORWARD-READY.txt)** - Quick 15-minute test guide
+- **[docs/guides/CARRY-FORWARD-COMPLETE.md](docs/guides/CARRY-FORWARD-COMPLETE.md)** - Full testing documentation
 
 ### Implementing Features?
-- **[MULTI-SEGMENT-STATUS.md](MULTI-SEGMENT-STATUS.md)** - Multi-segment implementation status
-- **[REBRANDING-COMPLETE.txt](REBRANDING-COMPLETE.txt)** - Rebranding summary
+- **[docs/guides/MULTI-SEGMENT-STATUS.md](docs/guides/MULTI-SEGMENT-STATUS.md)** - Multi-segment implementation status
 
 ### Need Setup Help?
-- **[RENAME-FOLDER-INSTRUCTIONS.md](RENAME-FOLDER-INSTRUCTIONS.md)** - Folder rename steps
+- **[docs/guides/RENAME-FOLDER-INSTRUCTIONS.md](docs/guides/RENAME-FOLDER-INSTRUCTIONS.md)** - Folder rename steps
+
+### Browse All Documentation
+- **[docs/README.md](docs/README.md)** - Complete documentation index
 
 ---
 
@@ -71,19 +73,20 @@ Open http://localhost:3000
 | [SESSION-SUMMARY.md](SESSION-SUMMARY.md) | Complete work log | Start here for overview |
 | [README.md](README.md) | Setup & features | Setting up project |
 | [CLAUDE.md](CLAUDE.md) | Dev guidelines | Building features |
+| [docs/README.md](docs/README.md) | Documentation index | Finding specific docs |
 
 ### Feature Documentation:
 | File | Purpose | When to Read |
 |------|---------|--------------|
-| [CARRY-FORWARD-COMPLETE.md](CARRY-FORWARD-COMPLETE.md) | Full carry-forward guide | Testing/understanding carry-forward |
-| [CARRY-FORWARD-READY.txt](CARRY-FORWARD-READY.txt) | Quick test guide | Quick 15-min test |
-| [MULTI-SEGMENT-STATUS.md](MULTI-SEGMENT-STATUS.md) | Multi-segment status | Implementing segments |
+| [docs/guides/CARRY-FORWARD-COMPLETE.md](docs/guides/CARRY-FORWARD-COMPLETE.md) | Full carry-forward guide | Testing/understanding carry-forward |
+| [docs/guides/CARRY-FORWARD-READY.txt](docs/guides/CARRY-FORWARD-READY.txt) | Quick test guide | Quick 15-min test |
+| [docs/guides/MULTI-SEGMENT-STATUS.md](docs/guides/MULTI-SEGMENT-STATUS.md) | Multi-segment status | Implementing segments |
 
 ### Setup & Admin:
 | File | Purpose | When to Read |
 |------|---------|--------------|
-| [RENAME-FOLDER-INSTRUCTIONS.md](RENAME-FOLDER-INSTRUCTIONS.md) | Folder rename | One-time setup |
-| [REBRANDING-COMPLETE.txt](REBRANDING-COMPLETE.txt) | Rebranding summary | Understanding rebrand |
+| [docs/guides/RENAME-FOLDER-INSTRUCTIONS.md](docs/guides/RENAME-FOLDER-INSTRUCTIONS.md) | Folder rename | One-time setup |
+| [docs/archive/](docs/archive/) | Historical docs | Reference/context |
 
 ---
 
