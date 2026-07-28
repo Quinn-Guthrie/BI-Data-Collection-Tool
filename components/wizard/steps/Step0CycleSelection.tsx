@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 interface Cycle {
   id: string
   name: string
-  businessSegment: {
+  segment: {
     id: string
     name: string
     color: string
@@ -35,7 +35,7 @@ export default function Step0CycleSelection({
           setCycles(data)
           // Auto-select if only one cycle
           if (data.length === 1) {
-            onSelect(data[0].id, data[0].businessSegment.id)
+            onSelect(data[0].id, data[0].segment.id)
           }
         } else {
           setError('No active cycles found')
@@ -46,7 +46,7 @@ export default function Step0CycleSelection({
   }, [])
 
   const handleSelect = (cycle: Cycle) => {
-    onSelect(cycle.id, cycle.businessSegment.id)
+    onSelect(cycle.id, cycle.segment.id)
   }
 
   const handleContinue = () => {
@@ -117,10 +117,10 @@ export default function Step0CycleSelection({
             <div className="flex items-center gap-3 mb-2">
               <div
                 className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: cycle.businessSegment.color }}
+                style={{ backgroundColor: cycle.segment.color }}
               />
               <h3 className="text-lg font-semibold text-gray-900">
-                {cycle.businessSegment.name}
+                {cycle.segment.name}
               </h3>
             </div>
             <p className="text-sm text-gray-600">Cycle: {cycle.name}</p>

@@ -42,10 +42,10 @@ export default function EntryWizard({
   existingEntry?: any
 }) {
   const router = useRouter()
+  const isEditMode = !!entryId
   const [currentStep, setCurrentStep] = useState(isEditMode ? 1 : 0)
   const [loading, setLoading] = useState(false)
   const [cycle, setCycle] = useState<any>(null)
-  const isEditMode = !!entryId
 
   const [wizardData, setWizardData] = useState<WizardData>({
     cycleId: '',
@@ -119,7 +119,10 @@ export default function EntryWizard({
     { number: 7, title: 'Review', component: Step7Review },
   ]
 
-  const CurrentStepComponent = steps[currentStep - 1].component
+  // Handle Step 0 (cycle selection) separately
+  const CurrentStepComponent = currentStep === 0
+    ? Step0CycleSelection
+    : steps[currentStep - 1].component
 
   const handleNext = () => {
     if (currentStep < 7) {
@@ -130,9 +133,13 @@ export default function EntryWizard({
   }
 
   const handlePrevious = () => {
-    if (currentStep > 1) {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
     }
+  }
+
+  const handleCycleSelect = (cycleId: string, businessSegmentId: string) => {
+    updateData({ cycleId, businessSegmentId })
   }
 
   const handleSaveDraft = async () => {
@@ -201,10 +208,11 @@ export default function EntryWizard({
 
   return (
     <div className="bg-white rounded-lg shadow-lg">
-      {/* Progress Steps */}
-      <div className="border-b border-gray-200">
-        <nav className="flex overflow-x-auto">
-          {steps.map((step) => (
+      {/* Progress Steps - Hide on Step 0 */}
+      {currentStep > 0 && (
+        <div className="border-b border-gray-200">
+          <nav className="flex overflow-x-auto">
+            {steps.map((step) => (
             <button
               key={step.number}
               onClick={() => setCurrentStep(step.number)}
@@ -233,22 +241,32 @@ export default function EntryWizard({
             </button>
           ))}
         </nav>
-      </div>
+        </div>
+      )}
 
       {/* Step Content */}
       <div className="p-6 min-h-[400px]">
-        <CurrentStepComponent
-          data={wizardData}
-          updateData={updateData}
-          cycle={cycle}
-        />
+        {currentStep === 0 ? (
+          <Step0CycleSelection
+            selectedCycleId={wizardData.cycleId}
+            selectedBusinessSegmentId={wizardData.businessSegmentId}
+            onSelect={handleCycleSelect}
+            onNext={handleNext}
+          />
+        ) : (
+          <CurrentStepComponent
+            data={wizardData}
+            updateData={updateData}
+            cycle={cycle}
+          />
+        )}
       </div>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
         <button
           onClick={handlePrevious}
-          disabled={currentStep === 1}
+          disabled={currentStep === 0 || (isEditMode && currentStep === 1)}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
