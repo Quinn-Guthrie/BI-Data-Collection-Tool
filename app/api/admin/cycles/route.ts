@@ -1,102 +1,108 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+/**
+ * Admin Cycles API Route
+ *
+ * Manage data collection cycles
+ */
+
 import { prisma } from '@/lib/prisma'
+import {
+  apiSuccess,
+  apiCreated,
+  apiError,
+  asyncHandler,
+  validateRequestBody,
+} from '@/lib/api/apiResponse'
+import { requireSuperAdmin } from '@/lib/api/apiMiddleware'
+import { createCycleSchema } from '@/lib/validations/apiValidation'
+import { ValidationError, ConflictError, NotFoundError } from '@/lib/errors/AppError'
 
-export async function GET(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
+/**
+ * GET /api/admin/cycles
+ * Get all cycles
+ */
+export const GET = asyncHandler(async (request: Request) => {
+  await requireSuperAdmin()
 
-    if (!session || session.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const cycles = await prisma.cycle.findMany({
-      include: {
-        _count: {
-          select: { entries: true },
-        },
+  const cycles = await prisma.cycle.findMany({
+    include: {
+      segment: true,
+      _count: {
+        select: { entries: true },
       },
-      orderBy: { status: 'asc' },
-    })
+    },
+    orderBy: [{ status: 'asc' }, { openedAt: 'desc' }],
+  })
 
-    return NextResponse.json(cycles)
-  } catch (error) {
-    console.error('Error fetching cycles:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch cycles' },
-      { status: 500 }
+  return apiSuccess(cycles)
+})
+
+/**
+ * POST /api/admin/cycles
+ * Create new cycle
+ */
+export const POST = asyncHandler(async (request: Request) => {
+  const admin = await requireSuperAdmin()
+
+  // Parse and validate request body
+  const body = await validateRequestBody(request)
+  const validatedData = createCycleSchema.parse(body)
+
+  // Verify business segment exists
+  const segment = await prisma.businessSegment.findUnique({
+    where: { id: validatedData.segmentId },
+  })
+
+  if (!segment) {
+    throw new NotFoundError('Business segment')
+  }
+
+  // Check if there's already an open cycle for this segment
+  const existingOpenCycle = await prisma.cycle.findFirst({
+    where: {
+      segmentId: validatedData.segmentId,
+      status: 'open',
+    },
+    include: {
+      segment: true,
+    },
+  })
+
+  if (existingOpenCycle) {
+    throw new ConflictError(
+      `There is already an open cycle for ${existingOpenCycle.segment.name}. Lock it before creating a new one.`
     )
   }
-}
 
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
+  // Create new cycle
+  const cycle = await prisma.cycle.create({
+    data: {
+      name: validatedData.name,
+      segmentId: validatedData.segmentId,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: admin.id,
+    },
+    include: {
+      segment: true,
+    },
+  })
 
-    if (!session || session.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const { name } = body
-
-    if (!name) {
-      return NextResponse.json(
-        { error: 'Cycle name is required' },
-        { status: 400 }
-      )
-    }
-
-    // Check if there's already an open cycle
-    const existingOpenCycle = await prisma.cycle.findFirst({
-      where: { status: 'open' },
-    })
-
-    if (existingOpenCycle) {
-      return NextResponse.json(
-        { error: 'There is already an open cycle. Lock it before creating a new one.' },
-        { status: 400 }
-      )
-    }
-
-    // Create new cycle
-    const cycle = await prisma.cycle.create({
-      data: {
-        name,
+  // Create audit log
+  await prisma.auditLog.create({
+    data: {
+      entityType: 'Cycle',
+      entityId: cycle.id,
+      action: 'created',
+      changedBy: admin.id,
+      newValue: JSON.stringify({
+        name: cycle.name,
+        segment: segment.name,
         status: 'open',
-        createdBy: session.user.id,
-      },
-    })
+      }),
+    },
+  })
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        entityType: 'Cycle',
-        entityId: cycle.id,
-        action: 'created',
-        changedBy: session.user.id,
-        newValue: JSON.stringify({
-          name: cycle.name,
-          status: cycle.status,
-          createdBy: session.user.email,
-        }),
-      },
-    })
+  console.log('[Cycle Creation] Success:', cycle.id)
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Cycle created successfully',
-        cycle,
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    console.error('Error creating cycle:', error)
-    return NextResponse.json(
-      { error: 'Failed to create cycle' },
-      { status: 500 }
-    )
-  }
-}
+  return apiCreated(cycle, `Cycle "${cycle.name}" created successfully for ${segment.name}`)
+})

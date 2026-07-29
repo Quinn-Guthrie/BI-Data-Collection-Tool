@@ -1,145 +1,140 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+/**
+ * Admin Users API Route
+ *
+ * Manages user accounts with professional error handling
+ */
+
 import { prisma } from '@/lib/prisma'
+import {
+  apiSuccess,
+  apiCreated,
+  apiError,
+  asyncHandler,
+  validateRequestBody,
+} from '@/lib/api/apiResponse'
+import { requireSuperAdmin } from '@/lib/api/apiMiddleware'
+import { createUserSchema } from '@/lib/validations/apiValidation'
+import { ConflictError, ValidationError } from '@/lib/errors/AppError'
 import * as bcrypt from 'bcryptjs'
 
-export async function GET(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
+/**
+ * GET /api/admin/users
+ * Get all users (super admin only)
+ */
+export const GET = asyncHandler(async (request: Request) => {
+  // Require super admin
+  await requireSuperAdmin()
 
-    if (!session || session.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        active: true,
-        createdAt: true,
-        userSegments: {
-          include: {
-            segment: true,
-          },
+  // Fetch all users with their segment assignments
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      active: true,
+      createdAt: true,
+      userSegments: {
+        include: {
+          segment: true,
         },
       },
-      orderBy: { createdAt: 'desc' },
-    })
+    },
+    orderBy: { createdAt: 'desc' },
+  })
 
-    return NextResponse.json(users)
-  } catch (error) {
-    console.error('Error fetching users:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+  return apiSuccess(users)
+})
+
+/**
+ * POST /api/admin/users
+ * Create new user (super admin only)
+ */
+export const POST = asyncHandler(async (request: Request) => {
+  // Require super admin
+  const admin = await requireSuperAdmin()
+
+  // Parse and validate request body
+  const body = await validateRequestBody(request)
+
+  // Validate with Zod schema
+  const validatedData = createUserSchema.parse(body)
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: validatedData.email.toLowerCase() },
+  })
+
+  if (existingUser) {
+    throw new ConflictError('A user with this email already exists')
   }
-}
 
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-
-    if (!session || session.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const { name, email, password, role, region, segments } = body
-
-    // Validation
-    if (!name || !email || !password || !role) {
-      return NextResponse.json(
-        { error: 'Name, email, password, and role are required' },
-        { status: 400 }
-      )
-    }
-
-    if (!segments || segments.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one business segment must be selected' },
-        { status: 400 }
-      )
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
-        { status: 400 }
-      )
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    })
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'A user with this email already exists' },
-        { status: 409 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Create user with segment assignments
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        name,
-        role: role === 'admin' ? 'account_manager' : role, // Convert old admin to account_manager
-        active: true,
-        userSegments: {
-          create: segments.map((segmentId: string) => ({
-            segmentId,
-            role: 'account_manager', // Default to account_manager, can be promoted later
-            assignedBy: session.user.id,
-          })),
-        },
-      },
-    })
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        entityType: 'User',
-        entityId: user.id,
-        action: 'created',
-        changedBy: session.user.id,
-        newValue: JSON.stringify({
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          segments: segments.length,
-          createdBy: session.user.email,
-        }),
-      },
-    })
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'User created successfully',
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        },
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    console.error('Error creating user:', error)
-    return NextResponse.json(
-      { error: 'Failed to create user' },
-      { status: 500 }
-    )
+  // Validate segments
+  if (!validatedData.segments || validatedData.segments.length === 0) {
+    throw new ValidationError('At least one business segment must be assigned')
   }
-}
+
+  // Verify all segments exist
+  const segments = await prisma.businessSegment.findMany({
+    where: { id: { in: validatedData.segments } },
+  })
+
+  if (segments.length !== validatedData.segments.length) {
+    throw new ValidationError('One or more invalid business segments selected')
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(validatedData.password, 12)
+
+  // Create user with segment assignments
+  const user = await prisma.user.create({
+    data: {
+      email: validatedData.email.toLowerCase(),
+      password: hashedPassword,
+      name: validatedData.name,
+      role: validatedData.role,
+      active: true,
+      userSegments: {
+        create: validatedData.segments.map((segmentId) => ({
+          segmentId,
+          role: 'account_manager',
+          assignedBy: admin.id,
+        })),
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      active: true,
+      createdAt: true,
+      userSegments: {
+        include: {
+          segment: true,
+        },
+      },
+    },
+  })
+
+  // Create audit log
+  await prisma.auditLog.create({
+    data: {
+      entityType: 'User',
+      entityId: user.id,
+      action: 'created',
+      changedBy: admin.id,
+      newValue: JSON.stringify({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        segments: validatedData.segments,
+        createdBy: admin.email,
+      }),
+    },
+  })
+
+  console.log('[User Creation] Success:', user.id)
+
+  return apiCreated(user, 'User created successfully')
+})
