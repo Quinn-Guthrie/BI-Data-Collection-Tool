@@ -7,6 +7,7 @@ import ActivityLog from '@/components/dashboard/ActivityLog'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
 import StatsSection from '@/components/dashboard/StatsSection'
 import ChartsSection from '@/components/dashboard/ChartsSection'
+import Collapsible from '@/components/ui/Collapsible'
 
 async function getStats(userId: string, role: string) {
   const where =
@@ -231,52 +232,36 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Active Cycles */}
-      <div
-        className="card"
-        style={{
-          background: 'var(--color-card)',
-          borderColor: 'var(--color-border)',
-        }}
-      >
-        <h2
-          className="text-lg font-semibold mb-3"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          Active Cycles
-        </h2>
+      <Collapsible title="Active Cycles" defaultOpen={true}>
         {openCycles.length === 0 ? (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No active cycles</p>
+          <p className="text-muted">No active cycles</p>
         ) : (
           <div className="space-y-2">
             {openCycles.map(cycle => (
               <div
                 key={cycle.id}
-                className="flex items-center justify-between p-3 rounded-lg"
-                style={{ background: 'var(--color-surface)' }}
+                className="flex items-center justify-between rounded-lg border bg-muted/50 p-3"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-3 h-3 rounded-full"
+                    className="h-3 w-3 rounded-full"
                     style={{ backgroundColor: cycle.segment.color }}
                   />
                   <div>
-                    <span
-                      className="font-medium"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
+                    <span className="font-medium">
                       {cycle.segment.name}:
                     </span>{' '}
-                    <span style={{ color: 'var(--color-text-secondary)' }}>
+                    <span className="text-muted-foreground">
                       {cycle.name}
                     </span>
                   </div>
                 </div>
-                <span className="badge badge-success">Open</span>
+                <span className="badge-success">Open</span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Collapsible>
 
       {/* Stats Section */}
       <StatsSection stats={stats} />
