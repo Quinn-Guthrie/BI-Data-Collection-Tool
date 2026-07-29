@@ -234,26 +234,31 @@ export default async function DashboardPage() {
       {/* Active Cycles */}
       <Collapsible title="Active Cycles" defaultOpen={true}>
         {openCycles.length === 0 ? (
-          <p className="text-muted">No active cycles</p>
+          <p style={{ color: '#B0BCD3' }}>No active cycles</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {openCycles.map(cycle => (
               <div
                 key={cycle.id}
-                className="flex items-center justify-between rounded-lg border bg-muted/50 p-3"
+                className="flex items-center justify-between rounded-2xl p-4 transition-all hover:bg-white/5"
+                style={{
+                  background: 'rgba(27, 38, 66, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: cycle.segment.color }}
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      backgroundColor: cycle.segment.color,
+                      boxShadow: `0 0 8px ${cycle.segment.color}`,
+                    }}
                   />
                   <div>
-                    <span className="font-medium">
-                      {cycle.segment.name}:
-                    </span>{' '}
-                    <span className="text-muted-foreground">
-                      {cycle.name}
+                    <span className="font-semibold" style={{ color: '#D9E2F0' }}>
+                      {cycle.segment.name}
                     </span>
+                    <span style={{ color: '#6B7A94' }}> • {cycle.name}</span>
                   </div>
                 </div>
                 <span className="badge-success">Open</span>

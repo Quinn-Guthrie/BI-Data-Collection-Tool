@@ -49,39 +49,47 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      {/* Theme Toggle - Top Right */}
       <div className="fixed top-4 right-4">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-md">
         <div className="card">
-          <div className="card-header text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-              <svg
-                className="h-8 w-8 text-primary-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div
+                className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl"
+                style={{
+                  background: 'linear-gradient(145deg, #FFB800 0%, #F5A623 100%)',
+                  boxShadow: '0 8px 24px rgba(255, 184, 0, 0.4)',
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+                <svg
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  style={{ color: '#000' }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+
+              <h1 className="text-2xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+                Food Biosciences
+              </h1>
+              <p style={{ color: '#B0BCD3', fontSize: '0.938rem' }}>
+                Sign in to your account
+              </p>
             </div>
 
-            <h1 className="card-title">Food Biosciences</h1>
-            <p className="card-description">
-              Sign in to your account to continue
-            </p>
-          </div>
-
-          <div className="card-content">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
                 <label htmlFor="email" className="label">
                   Email
                 </label>
@@ -96,7 +104,7 @@ function LoginForm() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <label htmlFor="password" className="label">
                   Password
                 </label>
@@ -112,56 +120,36 @@ function LoginForm() {
               </div>
 
               {error && (
-                <div className="alert alert-destructive">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium">{error}</span>
+                <div
+                  className="rounded-2xl p-4 text-sm font-medium"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#EF4444',
+                  }}
+                >
+                  {error}
                 </div>
               )}
 
               {success && (
-                <div className="rounded-lg border border-success bg-success/10 p-4">
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="h-4 w-4 text-success"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium text-success">
-                      {success}
-                    </span>
-                  </div>
+                <div
+                  className="rounded-2xl p-4 text-sm font-medium"
+                  style={{
+                    background: 'rgba(77, 225, 208, 0.15)',
+                    border: '1px solid rgba(77, 225, 208, 0.3)',
+                    color: '#4DE1D0',
+                  }}
+                >
+                  {success}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-default w-full"
-              >
+              <button type="submit" disabled={loading} className="btn-default w-full">
                 {loading ? (
                   <>
                     <svg
-                      className="h-4 w-4 animate-spin"
+                      className="h-5 w-5 animate-spin"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -187,12 +175,12 @@ function LoginForm() {
                 )}
               </button>
             </form>
-          </div>
 
-          <div className="card-footer">
-            <p className="text-muted w-full text-center">
-              Secure authentication powered by NextAuth
-            </p>
+            <div className="mt-6 text-center">
+              <p className="text-xs" style={{ color: '#6B7A94' }}>
+                Secure authentication powered by NextAuth
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -205,7 +193,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="text-muted-foreground">Loading...</div>
+          <div style={{ color: '#B0BCD3' }}>Loading...</div>
         </div>
       }
     >
