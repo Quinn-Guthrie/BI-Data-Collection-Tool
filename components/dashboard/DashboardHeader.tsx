@@ -15,11 +15,11 @@ export default function DashboardHeader({ user }: { user: User }) {
     const badges = {
       super_admin: {
         label: 'Super Admin',
-        style: 'badge badge-primary',
+        className: 'badge-default',
       },
       account_manager: {
         label: 'Account Manager',
-        style: 'badge',
+        className: 'badge-secondary',
       },
     }
     return badges[role as keyof typeof badges] || badges.account_manager
@@ -28,111 +28,53 @@ export default function DashboardHeader({ user }: { user: User }) {
   const roleBadge = getRoleBadge(user.role)
 
   return (
-    <header
-      className="border-b shadow-sm"
-      style={{
-        background: 'var(--color-surface)',
-        borderColor: 'var(--color-border)',
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left Side - Logo & Nav */}
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="flex items-center">
-              <h1
-                className="text-xl font-bold"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Food Biosciences
-              </h1>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        {/* Left Side - Logo & Nav */}
+        <div className="mr-4 flex md:mr-6">
+          <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
+            <span className="text-h4 font-bold">Food Biosciences</span>
+          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            <Link href="/dashboard" className="btn-ghost text-sm">
+              Dashboard
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1">
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={{
-                  color: 'var(--color-text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-hover)'
-                  e.currentTarget.style.color = 'var(--color-text-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--color-text-secondary)'
-                }}
-              >
-                Dashboard
+            <Link href="/dashboard/entries/new" className="btn-ghost text-sm">
+              New Entry
+            </Link>
+
+            {user.role === 'super_admin' && (
+              <Link href="/dashboard/admin" className="btn-ghost text-sm">
+                Admin
               </Link>
+            )}
+          </nav>
+        </div>
 
-              <Link
-                href="/dashboard/entries/new"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={{
-                  color: 'var(--color-text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-hover)'
-                  e.currentTarget.style.color = 'var(--color-text-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--color-text-secondary)'
-                }}
-              >
-                New Entry
-              </Link>
-
-              {(user.role === 'super_admin') && (
-                <Link
-                  href="/dashboard/admin"
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    color: 'var(--color-text-secondary)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--color-hover)'
-                    e.currentTarget.style.color = 'var(--color-text-primary)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'var(--color-text-secondary)'
-                  }}
-                >
-                  Admin Panel
-                </Link>
-              )}
-            </nav>
-          </div>
-
-          {/* Right Side - User Info & Actions */}
-          <div className="flex items-center gap-4">
-            {/* User Info */}
-            <div className="hidden sm:flex items-center gap-3">
-              <div className="text-right">
-                <p
-                  className="text-sm font-medium"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  {user.name}
-                </p>
-                <span className={roleBadge.style}>{roleBadge.label}</span>
-              </div>
+        {/* Right Side - User Info & Actions */}
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          {/* User Info */}
+          <div className="hidden items-center gap-3 sm:flex">
+            <div className="text-right">
+              <p className="text-small">{user.name}</p>
+              <span className={`badge ${roleBadge.className}`}>
+                {roleBadge.label}
+              </span>
             </div>
-
-            {/* Theme Toggle */}
-            <ThemeToggle />
-
-            {/* Logout Button */}
-            <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
-              className="btn btn-secondary btn-sm"
-            >
-              Logout
-            </button>
           </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Logout Button */}
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="btn-outline btn-sm"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </header>
