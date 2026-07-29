@@ -60,8 +60,7 @@ function LoginForm() {
               <div
                 className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl"
                 style={{
-                  background: 'linear-gradient(145deg, #FFB800 0%, #F5A623 100%)',
-                  boxShadow: '0 8px 24px rgba(255, 184, 0, 0.4)',
+                  background: 'linear-gradient(145deg, #CDE9FF 0%, #A8D5FF 100%)',
                 }}
               >
                 <svg
@@ -70,7 +69,7 @@ function LoginForm() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2.5}
-                  style={{ color: '#000' }}
+                  style={{ color: '#0a0a0a' }}
                 >
                   <path
                     strokeLinecap="round"
