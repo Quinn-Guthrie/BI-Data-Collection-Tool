@@ -1,204 +1,204 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+/**
+ * Entries API Route
+ *
+ * Handles entry creation with:
+ * - Professional error handling
+ * - Input validation
+ * - Duplicate detection
+ * - Audit logging
+ */
+
 import { prisma } from '@/lib/prisma'
+import {
+  apiSuccess,
+  apiCreated,
+  apiError,
+  asyncHandler,
+  validateRequestBody,
+} from '@/lib/api/apiResponse'
+import { requireAuth } from '@/lib/api/apiMiddleware'
+import { createEntrySchema, enzymeValueSchema } from '@/lib/validations/apiValidation'
+import {
+  ValidationError,
+  ConflictError,
+  NotFoundError,
+  BusinessLogicError,
+} from '@/lib/errors/AppError'
 
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+/**
+ * POST /api/entries
+ * Create new entry
+ */
+export const POST = asyncHandler(async (request: Request) => {
+  // 1. Authentication
+  const user = await requireAuth()
 
-    const body = await request.json()
-    console.log('Entry submission received:', {
-      companyId: body.companyId,
-      countryId: body.countryId,
-      segmentId: body.segmentId,
-      plantId: body.plantId,
-      status: body.status,
-      finalized: body.finalized,
+  // 2. Parse and validate request body
+  const body = await validateRequestBody(request)
+
+  // 3. Validate main entry data
+  const validatedData = createEntrySchema.parse({
+    ...body,
+    accountManagerUserId: user.id, // Set from session
+  })
+
+  console.log('[Entry Creation] Validated data:', {
+    companyId: validatedData.companyId,
+    countryId: validatedData.countryId,
+    segmentId: validatedData.segmentId,
+    status: validatedData.status,
+  })
+
+  // 4. Verify business segment exists
+  const businessSegment = await prisma.businessSegment.findUnique({
+    where: { id: validatedData.businessSegmentId },
+  })
+
+  if (!businessSegment) {
+    throw new NotFoundError('Business segment')
+  }
+
+  // 5. Check for duplicate entry
+  const existing = await prisma.entry.findFirst({
+    where: {
+      businessSegmentId: validatedData.businessSegmentId,
+      cycleId: validatedData.cycleId,
+      companyId: validatedData.companyId,
+      countryId: validatedData.countryId,
+      segmentId: validatedData.segmentId,
+      plantId: validatedData.plantId || null,
+    },
+    include: {
+      company: { select: { name: true } },
+      country: { select: { countryName: true } },
+      segment: { select: { name: true } },
+      plant: { select: { name: true } },
+    },
+  })
+
+  if (existing) {
+    const plantInfo = existing.plant ? ` | Plant: ${existing.plant.name}` : ''
+    throw new ConflictError(
+      `Entry already exists: ${existing.company.name} | ${existing.country.countryName} | ${existing.segment.name}${plantInfo}. Please edit the existing entry instead.`
+    )
+  }
+
+  // 6. Validate enzyme values if finalizing
+  if (validatedData.finalized && body.enzymeValues) {
+    const enzymeIds = Object.keys(body.enzymeValues)
+
+    // Get enzyme names for better error messages
+    const enzymes = await prisma.enzymeCategory.findMany({
+      where: { id: { in: enzymeIds } },
+      select: { id: true, name: true },
     })
+    const enzymeMap = new Map(enzymes.map((e) => [e.id, e.name]))
 
-    const {
-      cycleId,
-      businessSegmentId,
-      plantId,
-      companyId,
-      countryId,
-      region,
-      subregion,
-      existingCustomer,
-      goToMarket,
-      distributorName,
-      productionBeerHlYear,
-      segmentId,
-      productionPercent,
-      confidencePercent,
-      comments,
-      status,
-      finalized,
-      enzymeValues,
-    } = body
+    // Validate each enzyme value
+    for (const enzymeId of enzymeIds) {
+      const enzymeData = body.enzymeValues[enzymeId]
 
-    // Validation errors array
-    const errors: string[] = []
+      // Validate with Zod schema
+      const validated = enzymeValueSchema.parse({
+        enzymeCategoryId: enzymeId,
+        ...enzymeData,
+      })
 
-    // These fields are always required (database constraints)
-    if (!cycleId) errors.push('Cycle is required')
-    if (!businessSegmentId) errors.push('Business segment is required')
-    if (!companyId) errors.push('Company is required')
-    if (!countryId) errors.push('Country is required')
-    if (!region) errors.push('Region is required')
-    if (!subregion) errors.push('Subregion is required')
-    if (!existingCustomer) errors.push('Existing customer status is required')
-    if (!goToMarket) errors.push('Go-to-market strategy is required')
-    if (!segmentId) errors.push('Segment is required')
+      // Business logic: If penetration > 0, market share must total 100%
+      if (validated.penetrationPercent && validated.penetrationPercent > 0) {
+        const total =
+          (validated.iffMarketSharePercent || 0) +
+          (validated.novonesisMarketSharePercent || 0) +
+          (validated.dsmMarketSharePercent || 0) +
+          (validated.othersMarketSharePercent || 0)
 
-    // Additional validation for finalized entries
-    if (finalized) {
-      if (goToMarket === 'distributor' && !distributorName) {
-        errors.push('Distributor name is required when using distributor channel')
-      }
-      if (confidencePercent === null || confidencePercent === undefined) {
-        errors.push('Confidence percentage is required for finalized entries')
-      }
-
-      // Validate enzyme market shares
-      if (enzymeValues) {
-        // Get all enzyme categories for validation messages
-        const allEnzymes = await prisma.enzymeCategory.findMany({
-          select: { id: true, name: true },
-        })
-        const enzymeMap = new Map(allEnzymes.map(e => [e.id, e.name]))
-
-        for (const enzymeId of Object.keys(enzymeValues)) {
-          const ev = enzymeValues[enzymeId]
-          if (ev.penetrationPercent > 0) {
-            const total =
-              (ev.iffMarketSharePercent || 0) +
-              (ev.novonesisMarketSharePercent || 0) +
-              (ev.dsmMarketSharePercent || 0) +
-              (ev.othersMarketSharePercent || 0)
-
-            if (Math.abs(total - 100) > 0.1) {
-              const enzymeName = enzymeMap.get(enzymeId) || 'Enzyme'
-              errors.push(
-                `${enzymeName} market share must total 100% (currently ${total.toFixed(1)}%)`
-              )
-            }
-          }
+        if (Math.abs(total - 100) > 0.01) {
+          const enzymeName = enzymeMap.get(enzymeId) || 'Enzyme'
+          throw new BusinessLogicError(
+            `${enzymeName} market share must total exactly 100% (currently ${total.toFixed(1)}%)`,
+            { enzymeId, enzymeName, total }
+          )
         }
       }
     }
-
-    if (errors.length > 0) {
-      return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 })
-    }
-
-    // Verify business segment exists
-    const businessSegment = await prisma.businessSegment.findUnique({
-      where: { id: businessSegmentId }
-    })
-
-    if (!businessSegment) {
-      return NextResponse.json(
-        { error: 'Business segment not found' },
-        { status: 404 }
-      )
-    }
-
-    // Check for duplicate
-    const existing = await prisma.entry.findFirst({
-      where: {
-        businessSegmentId,
-        cycleId,
-        companyId,
-        countryId,
-        segmentId,
-        plantId: plantId || null,
-      },
-      include: {
-        company: { select: { name: true } },
-        country: { select: { countryName: true } },
-        segment: { select: { name: true } },
-        plant: { select: { name: true } },
-      },
-    })
-
-    if (existing) {
-      const plantInfo = existing.plant ? ` | Plant: ${existing.plant.name}` : ''
-      return NextResponse.json(
-        {
-          error: `Entry already exists: ${existing.company.name} | ${existing.country.countryName} | ${existing.segment.name}${plantInfo}. Please choose a different combination or edit the existing entry from the dashboard.`
-        },
-        { status: 409 }
-      )
-    }
-
-    // Create entry
-    const entry = await prisma.entry.create({
-      data: {
-        businessSegmentId, // Use provided business segment
-        cycleId,
-        accountManagerUserId: session.user.id,
-        plantId: plantId || null,
-        companyId,
-        countryId,
-        region,
-        subregion,
-        existingCustomer,
-        goToMarket,
-        distributorId: null,
-        productionBeerHlYear,
-        segmentId,
-        productionPercent,
-        confidencePercent,
-        comments,
-        status: status || 'draft',
-        finalized: finalized || false,
-        approvalStatus: finalized ? 'pending' : 'pending',
-        finalizedAt: finalized ? new Date() : null,
-      },
-    })
-
-    // Create enzyme values
-    if (enzymeValues) {
-      const enzymeRecords = Object.keys(enzymeValues).map((enzymeId) => ({
-        entryId: entry.id,
-        enzymeCategoryId: enzymeId,
-        usageStatus: enzymeValues[enzymeId].usageStatus || 'unknown',
-        penetrationPercent: enzymeValues[enzymeId].penetrationPercent || null,
-        iffMarketSharePercent: enzymeValues[enzymeId].iffMarketSharePercent || null,
-        novonesisMarketSharePercent:
-          enzymeValues[enzymeId].novonesisMarketSharePercent || null,
-        dsmMarketSharePercent: enzymeValues[enzymeId].dsmMarketSharePercent || null,
-        othersMarketSharePercent: enzymeValues[enzymeId].othersMarketSharePercent || null,
-        confirmed: true,
-      }))
-
-      await prisma.entryEnzymeValue.createMany({
-        data: enzymeRecords,
-      })
-    }
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        entityType: 'Entry',
-        entityId: entry.id,
-        action: finalized ? 'finalized' : 'created',
-        changedBy: session.user.id,
-        newValue: JSON.stringify({ status, finalized }),
-      },
-    })
-
-    return NextResponse.json({ success: true, entry }, { status: 201 })
-  } catch (error) {
-    console.error('Entry creation error:', error)
-    return NextResponse.json(
-      { error: 'Failed to create entry', details: String(error) },
-      { status: 500 }
-    )
   }
-}
+
+  // 7. Additional validation for finalized entries
+  if (validatedData.finalized) {
+    if (!validatedData.confidencePercent) {
+      throw new ValidationError('Confidence percentage is required for finalized entries')
+    }
+
+    if (validatedData.goToMarket === 'distributor' && !validatedData.distributorId) {
+      throw new ValidationError('Distributor is required when go-to-market is set to distributor')
+    }
+  }
+
+  // 8. Create entry in database
+  const entry = await prisma.entry.create({
+    data: {
+      businessSegmentId: validatedData.businessSegmentId,
+      cycleId: validatedData.cycleId,
+      accountManagerUserId: validatedData.accountManagerUserId,
+      plantId: validatedData.plantId || null,
+      companyId: validatedData.companyId,
+      countryId: validatedData.countryId,
+      region: validatedData.region,
+      subregion: validatedData.subregion,
+      existingCustomer: validatedData.existingCustomer,
+      goToMarket: validatedData.goToMarket,
+      distributorId: validatedData.distributorId || null,
+      productionBeerHlYear: validatedData.productionBeerHlYear || null,
+      segmentId: validatedData.segmentId,
+      productionPercent: validatedData.productionPercent || null,
+      confidencePercent: validatedData.confidencePercent || null,
+      comments: validatedData.comments || null,
+      status: validatedData.status,
+      finalized: validatedData.finalized,
+      approvalStatus: validatedData.finalized ? 'submitted' : 'pending',
+      finalizedAt: validatedData.finalized ? new Date() : null,
+    },
+  })
+
+  // 9. Create enzyme values if provided
+  if (body.enzymeValues) {
+    const enzymeRecords = Object.keys(body.enzymeValues).map((enzymeId) => ({
+      entryId: entry.id,
+      enzymeCategoryId: enzymeId,
+      usageStatus: body.enzymeValues[enzymeId].usageStatus || 'unknown',
+      penetrationPercent: body.enzymeValues[enzymeId].penetrationPercent || null,
+      iffMarketSharePercent: body.enzymeValues[enzymeId].iffMarketSharePercent || null,
+      novonesisMarketSharePercent:
+        body.enzymeValues[enzymeId].novonesisMarketSharePercent || null,
+      dsmMarketSharePercent: body.enzymeValues[enzymeId].dsmMarketSharePercent || null,
+      othersMarketSharePercent: body.enzymeValues[enzymeId].othersMarketSharePercent || null,
+      confirmed: true,
+    }))
+
+    await prisma.entryEnzymeValue.createMany({
+      data: enzymeRecords,
+    })
+  }
+
+  // 10. Create audit log
+  await prisma.auditLog.create({
+    data: {
+      entityType: 'Entry',
+      entityId: entry.id,
+      action: validatedData.finalized ? 'finalized' : 'created',
+      changedBy: user.id,
+      newValue: JSON.stringify({
+        status: validatedData.status,
+        finalized: validatedData.finalized,
+      }),
+    },
+  })
+
+  console.log('[Entry Creation] Success:', entry.id)
+
+  // 11. Return success response
+  return apiCreated(
+    entry,
+    `Entry ${validatedData.finalized ? 'created and finalized' : 'saved as draft'} successfully`
+  )
+})
