@@ -19,7 +19,7 @@ export async function POST(
     // Get the new cycle
     const newCycle = await prisma.cycle.findUnique({
       where: { id: newCycleId },
-      include: { businessSegment: true },
+      include: { segment: true },
     })
 
     if (!newCycle) {
@@ -48,11 +48,11 @@ export async function POST(
     // Find the most recent locked cycle in the same business segment
     const previousCycle = await prisma.cycle.findFirst({
       where: {
-        businessSegmentId: newCycle.businessSegmentId,
+        segmentId: newCycle.segmentId,
         status: 'locked',
         id: { not: newCycleId },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { openedAt: 'desc' },
     })
 
     if (!previousCycle) {
@@ -70,7 +70,7 @@ export async function POST(
       },
       include: {
         enzymeValues: true,
-        segments: true,
+        segment: true,
       },
     })
 
@@ -89,31 +89,24 @@ export async function POST(
       const newEntry = await prisma.entry.create({
         data: {
           cycleId: newCycleId,
-          businessSegmentId: newCycle.businessSegmentId,
+          businessSegmentId: newCycle.segmentId,
           accountManagerUserId: oldEntry.accountManagerUserId,
           companyId: oldEntry.companyId,
           countryId: oldEntry.countryId,
+          region: oldEntry.region,
+          subregion: oldEntry.subregion,
           plantId: oldEntry.plantId,
-          isExistingCustomer: oldEntry.isExistingCustomer,
+          existingCustomer: oldEntry.existingCustomer,
           goToMarket: oldEntry.goToMarket,
           distributorId: oldEntry.distributorId,
-          productionHlPerYear: oldEntry.productionHlPerYear,
+          productionBeerHlYear: oldEntry.productionBeerHlYear,
+          segmentId: oldEntry.segmentId,
+          productionPercent: oldEntry.productionPercent,
           status: 'carried_over_unconfirmed',
           sourceEntryId: oldEntry.id,
           // DO NOT copy: confidencePercent, comments, finalizedAt, approvalStatus
         },
       })
-
-      // Clone product segments
-      for (const oldSegment of oldEntry.segments) {
-        await prisma.entrySegment.create({
-          data: {
-            entryId: newEntry.id,
-            segmentId: oldSegment.segmentId,
-            productionPercent: oldSegment.productionPercent,
-          },
-        })
-      }
 
       // Clone enzyme values with confirmed: false
       for (const oldEnzyme of oldEntry.enzymeValues) {
@@ -123,9 +116,10 @@ export async function POST(
             enzymeCategoryId: oldEnzyme.enzymeCategoryId,
             usageStatus: oldEnzyme.usageStatus,
             penetrationPercent: oldEnzyme.penetrationPercent,
-            iffPercent: oldEnzyme.iffPercent,
-            novonesisDsmPercent: oldEnzyme.novonesisDsmPercent,
-            otherPercent: oldEnzyme.otherPercent,
+            iffMarketSharePercent: oldEnzyme.iffMarketSharePercent,
+            novonesisMarketSharePercent: oldEnzyme.novonesisMarketSharePercent,
+            dsmMarketSharePercent: oldEnzyme.dsmMarketSharePercent,
+            othersMarketSharePercent: oldEnzyme.othersMarketSharePercent,
             confirmed: false, // Must be confirmed by user
           },
         })
