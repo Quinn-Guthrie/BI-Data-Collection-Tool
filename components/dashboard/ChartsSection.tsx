@@ -16,6 +16,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
+import ChartCard from '@/components/ui/ChartCard'
+import { getChartColors, formatNumber } from '@/lib/chart-utils'
 
 interface ChartData {
   entriesBySegment: Array<{ name: string; value: number; color: string }>
@@ -26,6 +28,7 @@ interface ChartData {
 }
 
 export default function ChartsSection({ data }: { data: ChartData }) {
+  const [isDark, setIsDark] = useState(false)
   const [colors, setColors] = useState({
     text: '#1E293B',
     grid: '#E2E8F0',
@@ -35,30 +38,27 @@ export default function ChartsSection({ data }: { data: ChartData }) {
   })
 
   useEffect(() => {
-    // Get computed colors from CSS variables
     const root = document.documentElement
-    const computedStyle = getComputedStyle(root)
+    const theme = root.getAttribute('data-theme')
+    setIsDark(theme === 'dark')
 
-    setColors({
-      text: computedStyle.getPropertyValue('--color-text-primary').trim(),
-      grid: computedStyle.getPropertyValue('--color-border').trim(),
-      primary: computedStyle.getPropertyValue('--color-primary').trim(),
-      success: computedStyle.getPropertyValue('--color-success').trim(),
-      warning: computedStyle.getPropertyValue('--color-warning').trim(),
-    })
+    const updateColors = () => {
+      const computedStyle = getComputedStyle(root)
+      const newTheme = root.getAttribute('data-theme')
+      setIsDark(newTheme === 'dark')
 
-    // Update on theme change
-    const observer = new MutationObserver(() => {
-      const newStyle = getComputedStyle(root)
       setColors({
-        text: newStyle.getPropertyValue('--color-text-primary').trim(),
-        grid: newStyle.getPropertyValue('--color-border').trim(),
-        primary: newStyle.getPropertyValue('--color-primary').trim(),
-        success: newStyle.getPropertyValue('--color-success').trim(),
-        warning: newStyle.getPropertyValue('--color-warning').trim(),
+        text: computedStyle.getPropertyValue('--foreground').trim(),
+        grid: computedStyle.getPropertyValue('--border').trim(),
+        primary: computedStyle.getPropertyValue('--primary').trim(),
+        success: computedStyle.getPropertyValue('--success').trim(),
+        warning: computedStyle.getPropertyValue('--warning').trim(),
       })
-    })
+    }
 
+    updateColors()
+
+    const observer = new MutationObserver(updateColors)
     observer.observe(root, {
       attributes: true,
       attributeFilter: ['data-theme'],
@@ -67,24 +67,24 @@ export default function ChartsSection({ data }: { data: ChartData }) {
     return () => observer.disconnect()
   }, [])
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const chartColors = getChartColors(isDark)
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div
-          className="card card-compact"
-          style={{
-            background: 'var(--color-card)',
-            borderColor: 'var(--color-border)',
-          }}
-        >
+        <div className="rounded-lg border bg-card p-3 shadow-lg">
+          {label && (
+            <p className="mb-2 text-sm font-semibold">{label}</p>
+          )}
           {payload.map((entry: any, index: number) => (
-            <p
-              key={index}
-              className="text-sm"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              <strong>{entry.name}:</strong> {entry.value}
-            </p>
+            <div key={index} className="flex items-center gap-2 text-sm">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-muted-foreground">{entry.name}:</span>
+              <span className="font-medium">{formatNumber(entry.value)}</span>
+            </div>
           ))}
         </div>
       )
@@ -92,24 +92,36 @@ export default function ChartsSection({ data }: { data: ChartData }) {
     return null
   }
 
+  const EmptyState = () => (
+    <div className="flex h-[300px] items-center justify-center">
+      <div className="text-center">
+        <svg
+          className="mx-auto h-12 w-12 text-muted-foreground"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+        <p className="mt-2 text-sm text-muted-foreground">No data available</p>
+      </div>
+    </div>
+  )
+
   return (
     <div className="space-y-6">
       {/* Top Row - Pie Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Entries by Segment */}
-        <div
-          className="card"
-          style={{
-            background: 'var(--color-card)',
-            borderColor: 'var(--color-border)',
-          }}
+        <ChartCard
+          title="Entries by Business Segment"
+          description="Distribution across segments"
         >
-          <h3
-            className="text-lg font-semibold mb-4"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            Entries by Business Segment
-          </h3>
           {data.entriesBySegment.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -119,45 +131,28 @@ export default function ChartsSection({ data }: { data: ChartData }) {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
+                  innerRadius={60}
                   outerRadius={100}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
+                  paddingAngle={2}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
                   {data.entriesBySegment.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  wrapperStyle={{
-                    color: colors.text,
-                  }}
-                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              className="h-[300px] flex items-center justify-center"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              No data available
-            </div>
+            <EmptyState />
           )}
-        </div>
+        </ChartCard>
 
         {/* Entries by Status */}
-        <div
-          className="card"
-          style={{
-            background: 'var(--color-card)',
-            borderColor: 'var(--color-border)',
-          }}
+        <ChartCard
+          title="Entries by Status"
+          description="Current workflow state"
         >
-          <h3
-            className="text-lg font-semibold mb-4"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            Entries by Status
-          </h3>
           {data.entriesByStatus.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -167,163 +162,145 @@ export default function ChartsSection({ data }: { data: ChartData }) {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
+                  innerRadius={60}
                   outerRadius={100}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
+                  paddingAngle={2}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
                   {data.entriesByStatus.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  wrapperStyle={{
-                    color: colors.text,
-                  }}
-                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              className="h-[300px] flex items-center justify-center"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              No data available
-            </div>
+            <EmptyState />
           )}
-        </div>
+        </ChartCard>
       </div>
 
       {/* Middle Row - Bar Chart */}
-      <div
-        className="card"
-        style={{
-          background: 'var(--color-card)',
-          borderColor: 'var(--color-border)',
-        }}
+      <ChartCard
+        title="Top Contributors"
+        description="Most active account managers"
       >
-        <h3
-          className="text-lg font-semibold mb-4"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          Top Contributors
-        </h3>
         {data.topUsers.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.topUsers}>
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-              <XAxis dataKey="name" stroke={colors.text} />
-              <YAxis stroke={colors.text} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{
-                  color: colors.text,
-                }}
+            <BarChart data={data.topUsers} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={`hsl(${colors.grid})`} opacity={0.3} />
+              <XAxis
+                dataKey="name"
+                stroke={`hsl(${colors.text})`}
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
               />
-              <Bar dataKey="entries" fill={colors.primary} name="Entries Created" />
+              <YAxis
+                stroke={`hsl(${colors.text})`}
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="entries"
+                fill={`hsl(${colors.primary})`}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
+                name="Entries Created"
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div
-            className="h-[300px] flex items-center justify-center"
-            style={{ color: 'var(--color-text-tertiary)' }}
-          >
-            No data available
-          </div>
+          <EmptyState />
         )}
-      </div>
+      </ChartCard>
 
       {/* Bottom Row - Two Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Confidence Distribution */}
-        <div
-          className="card"
-          style={{
-            background: 'var(--color-card)',
-            borderColor: 'var(--color-border)',
-          }}
+        <ChartCard
+          title="Confidence Distribution"
+          description="Data quality confidence levels"
         >
-          <h3
-            className="text-lg font-semibold mb-4"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            Confidence Distribution
-          </h3>
           {data.confidenceDistribution.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.confidenceDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-                <XAxis dataKey="range" stroke={colors.text} />
-                <YAxis stroke={colors.text} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  wrapperStyle={{
-                    color: colors.text,
-                  }}
+              <BarChart data={data.confidenceDistribution} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={`hsl(${colors.grid})`} opacity={0.3} />
+                <XAxis
+                  dataKey="range"
+                  stroke={`hsl(${colors.text})`}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
                 />
-                <Bar dataKey="count" fill={colors.success} name="Number of Entries" />
+                <YAxis
+                  stroke={`hsl(${colors.text})`}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar
+                  dataKey="count"
+                  fill={`hsl(${colors.success})`}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={32}
+                  name="Number of Entries"
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              className="h-[300px] flex items-center justify-center"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              No data available
-            </div>
+            <EmptyState />
           )}
-        </div>
+        </ChartCard>
 
         {/* Completion Trend */}
-        <div
-          className="card"
-          style={{
-            background: 'var(--color-card)',
-            borderColor: 'var(--color-border)',
-          }}
+        <ChartCard
+          title="Completion Trend"
+          description="Last 7 days activity"
         >
-          <h3
-            className="text-lg font-semibold mb-4"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            Completion Trend (Last 7 Days)
-          </h3>
           {data.completionTrend.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={data.completionTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-                <XAxis dataKey="date" stroke={colors.text} />
-                <YAxis stroke={colors.text} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  wrapperStyle={{
-                    color: colors.text,
-                  }}
+              <LineChart data={data.completionTrend} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={`hsl(${colors.grid})`} opacity={0.3} />
+                <XAxis
+                  dataKey="date"
+                  stroke={`hsl(${colors.text})`}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
                 />
+                <YAxis
+                  stroke={`hsl(${colors.text})`}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
                 <Line
                   type="monotone"
                   dataKey="completed"
-                  stroke={colors.success}
+                  stroke={`hsl(${colors.success})`}
                   strokeWidth={2}
+                  dot={{ r: 4 }}
                   name="Completed"
                 />
                 <Line
                   type="monotone"
                   dataKey="drafted"
-                  stroke={colors.warning}
+                  stroke={`hsl(${colors.warning})`}
                   strokeWidth={2}
+                  dot={{ r: 4 }}
                   name="Drafted"
                 />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              className="h-[300px] flex items-center justify-center"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              No data available
-            </div>
+            <EmptyState />
           )}
-        </div>
+        </ChartCard>
       </div>
     </div>
   )

@@ -266,109 +266,9 @@ export default async function DashboardPage() {
       {/* Stats Section */}
       <StatsSection stats={stats} />
 
-      {/* Old Stats - Remove this entire section */}
-      <div className="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        {/* Total Records */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Records</p>
-              <p className="text-4xl font-bold mt-2">{stats.total}</p>
-              <p className="text-blue-100 text-xs mt-1">All entries</p>
-            </div>
-            <div className="bg-blue-400 bg-opacity-30 rounded-full p-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Not Started */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 transform transition-all hover:scale-105 hover:shadow-xl hover:border-gray-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium uppercase tracking-wide">Not Started</p>
-              <p className="text-4xl font-bold text-gray-700 mt-2">{stats.notStarted}</p>
-              {stats.total > 0 && (
-                <p className="text-gray-500 text-xs mt-1">
-                  {Math.round((stats.notStarted / stats.total) * 100)}% of total
-                </p>
-              )}
-            </div>
-            <div className="bg-gray-100 rounded-full p-3">
-              <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* In Progress */}
-        <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-yellow-100 text-sm font-medium uppercase tracking-wide">In Progress</p>
-              <p className="text-4xl font-bold mt-2">{stats.inProgress}</p>
-              {stats.total > 0 && (
-                <p className="text-yellow-100 text-xs mt-1">
-                  {Math.round((stats.inProgress / stats.total) * 100)}% of total
-                </p>
-              )}
-            </div>
-            <div className="bg-yellow-300 bg-opacity-30 rounded-full p-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Finalized */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium uppercase tracking-wide">Finalized</p>
-              <p className="text-4xl font-bold mt-2">{stats.finalized}</p>
-              {stats.total > 0 && (
-                <p className="text-green-100 text-xs mt-1">
-                  {Math.round((stats.finalized / stats.total) * 100)}% complete
-                </p>
-              )}
-            </div>
-            <div className="bg-green-400 bg-opacity-30 rounded-full p-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Pending Approval */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105 hover:shadow-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Pending Approval</p>
-              <p className="text-4xl font-bold mt-2">{stats.pendingApproval}</p>
-              {stats.finalized > 0 && (
-                <p className="text-purple-100 text-xs mt-1">
-                  {Math.round((stats.pendingApproval / stats.finalized) * 100)}% of finalized
-                </p>
-              )}
-            </div>
-            <div className="bg-purple-400 bg-opacity-30 rounded-full p-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
       {/* Actions */}
       <div className="flex gap-4">
-        <Link href="/dashboard/entries/new" className="btn btn-primary btn-lg">
+        <Link href="/dashboard/entries/new" className="btn-default btn-lg">
           <svg
             className="w-5 h-5"
             fill="none"
@@ -381,7 +281,7 @@ export default async function DashboardPage() {
           Add New Entry
         </Link>
         {session.user.role === 'super_admin' && (
-          <Link href="/dashboard/admin" className="btn btn-secondary btn-lg">
+          <Link href="/dashboard/admin" className="btn-secondary btn-lg">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -412,21 +312,9 @@ export default async function DashboardPage() {
       <FilteredEntriesSection initialEntries={entries} />
 
       {/* Recent Activity */}
-      <div
-        className="card"
-        style={{
-          background: 'var(--color-card)',
-          borderColor: 'var(--color-border)',
-        }}
-      >
-        <h2
-          className="text-lg font-semibold mb-4"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          Your Recent Activity
-        </h2>
+      <Collapsible title="Your Recent Activity" defaultOpen={false}>
         <ActivityLog limit={10} />
-      </div>
+      </Collapsible>
     </div>
   )
 }
