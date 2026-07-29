@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import ThemeToggle from '@/components/ThemeToggle'
 
 function LoginForm() {
   const [email, setEmail] = useState('admin@foodbio.com')
@@ -15,7 +15,6 @@ function LoginForm() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if redirected from signup
     if (searchParams.get('signup') === 'success') {
       setSuccess('Account created successfully! Please sign in.')
       setEmail('')
@@ -49,22 +48,59 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'var(--color-background)' }}
+    >
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div
+          className="card card-large"
+          style={{
+            background: 'var(--color-card)',
+            borderColor: 'var(--color-border)',
+          }}
+        >
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Food Biosciences Data Collection
+            <div
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+              style={{
+                background: 'var(--color-primary)',
+              }}
+            >
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+
+            <h1
+              className="text-2xl font-bold mb-2"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Food Biosciences
             </h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              Data Collection Platform
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="email" className="label">
                 Email
               </label>
               <input
@@ -73,16 +109,13 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input"
                 placeholder="admin@foodbio.com"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="password" className="label">
                 Password
               </label>
               <input
@@ -91,38 +124,74 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div
+                className="p-3 rounded-lg text-sm border"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  borderColor: 'var(--color-error)',
+                  color: 'var(--color-error)',
+                }}
+              >
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              <div
+                className="p-3 rounded-lg text-sm border"
+                style={{
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  borderColor: 'var(--color-success)',
+                  color: 'var(--color-success)',
+                }}
+              >
                 {success}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
+            <button type="submit" disabled={loading} className="btn btn-primary w-full">
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Signing in...
+                </span>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-blue-600 hover:text-blue-800 font-medium">
-                Create one
-              </Link>
+            <p
+              className="text-sm"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              Secure authentication powered by NextAuth
             </p>
           </div>
         </div>
@@ -133,7 +202,16 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700"><div className="text-white">Loading...</div></div>}>
+    <Suspense
+      fallback={
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ background: 'var(--color-background)' }}
+        >
+          <div style={{ color: 'var(--color-text-primary)' }}>Loading...</div>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

@@ -230,36 +230,52 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Cycle Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div>
-          <h2 className="text-lg font-semibold text-blue-900 mb-2">
-            Active Cycles
-          </h2>
-          {openCycles.length === 0 ? (
-            <p className="text-sm text-blue-700">No active cycles</p>
-          ) : (
-            <div className="space-y-2">
-              {openCycles.map(cycle => (
-                <div key={cycle.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: cycle.segment.color }}
-                    />
-                    <div>
-                      <span className="font-medium text-blue-900">{cycle.segment.name}:</span>{' '}
-                      <span className="text-blue-800">{cycle.name}</span>
-                    </div>
+      {/* Active Cycles */}
+      <div
+        className="card"
+        style={{
+          background: 'var(--color-card)',
+          borderColor: 'var(--color-border)',
+        }}
+      >
+        <h2
+          className="text-lg font-semibold mb-3"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          Active Cycles
+        </h2>
+        {openCycles.length === 0 ? (
+          <p style={{ color: 'var(--color-text-secondary)' }}>No active cycles</p>
+        ) : (
+          <div className="space-y-2">
+            {openCycles.map(cycle => (
+              <div
+                key={cycle.id}
+                className="flex items-center justify-between p-3 rounded-lg"
+                style={{ background: 'var(--color-surface)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: cycle.segment.color }}
+                  />
+                  <div>
+                    <span
+                      className="font-medium"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {cycle.segment.name}:
+                    </span>{' '}
+                    <span style={{ color: 'var(--color-text-secondary)' }}>
+                      {cycle.name}
+                    </span>
                   </div>
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                    Open
-                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <span className="badge badge-success">Open</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Stats Section */}
@@ -367,17 +383,38 @@ export default async function DashboardPage() {
 
       {/* Actions */}
       <div className="flex gap-4">
-        <Link
-          href="/dashboard/entries/new"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium"
-        >
+        <Link href="/dashboard/entries/new" className="btn btn-primary btn-lg">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
           Add New Entry
         </Link>
-        {(session.user.role === 'super_admin' || session.user.role === 'admin' || session.user.role === 'approver') && (
-          <Link
-            href="/dashboard/admin"
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-indigo-700 font-medium shadow-md"
-          >
+        {session.user.role === 'super_admin' && (
+          <Link href="/dashboard/admin" className="btn btn-secondary btn-lg">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
             Admin Panel
           </Link>
         )}
@@ -390,15 +427,20 @@ export default async function DashboardPage() {
       <FilteredEntriesSection initialEntries={entries} />
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Your Recent Activity
-          </h2>
-        </div>
-        <div className="p-6">
-          <ActivityLog limit={10} />
-        </div>
+      <div
+        className="card"
+        style={{
+          background: 'var(--color-card)',
+          borderColor: 'var(--color-border)',
+        }}
+      >
+        <h2
+          className="text-lg font-semibold mb-4"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          Your Recent Activity
+        </h2>
+        <ActivityLog limit={10} />
       </div>
     </div>
   )
