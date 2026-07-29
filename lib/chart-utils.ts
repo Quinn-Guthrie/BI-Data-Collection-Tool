@@ -4,27 +4,28 @@
 
 export const getChartColors = (isDark: boolean) => {
   if (isDark) {
+    // Vibrant colors for dark mode like the reference image
     return [
-      'hsl(203 100% 80%)',  // Light Blue #9AD3FF
+      'hsl(203 100% 75%)',  // Light Blue #9AD3FF - Primary
+      'hsl(38 95% 58%)',    // Orange - Secondary accent
       'hsl(142 76% 56%)',   // Light Green
-      'hsl(38 92% 60%)',    // Light Orange
       'hsl(262 83% 70%)',   // Light Purple
       'hsl(340 82% 65%)',   // Light Pink
-      'hsl(180 70% 50%)',   // Light Teal
-      'hsl(25 95% 65%)',    // Light Red-Orange
-      'hsl(220 70% 65%)',   // Light Indigo
+      'hsl(180 70% 50%)',   // Teal
+      'hsl(51 100% 50%)',   // Yellow
+      'hsl(290 70% 65%)',   // Magenta
     ]
   }
 
   return [
     'hsl(204 100% 41%)',  // Blue #0075CF
-    'hsl(142 71% 45%)',   // Green
     'hsl(38 92% 50%)',    // Orange
+    'hsl(142 71% 45%)',   // Green
     'hsl(262 83% 58%)',   // Purple
     'hsl(340 82% 52%)',   // Pink
     'hsl(180 100% 35%)',  // Teal
-    'hsl(25 95% 53%)',    // Red-Orange
-    'hsl(220 70% 50%)',   // Indigo
+    'hsl(51 90% 45%)',    // Yellow
+    'hsl(290 70% 50%)',   // Magenta
   ]
 }
 
