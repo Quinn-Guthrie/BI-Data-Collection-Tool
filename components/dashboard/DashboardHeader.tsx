@@ -13,7 +13,7 @@ interface User {
 export default function DashboardHeader({ user }: { user: User }) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="flex items-center gap-3">
