@@ -38,9 +38,6 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          region: user.region,
-          subregion: user.subregion,
-          canApprove: user.canApprove,
         }
       },
     }),
@@ -50,9 +47,6 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
-        token.region = user.region
-        token.subregion = user.subregion
-        token.canApprove = user.canApprove
       }
       return token
     },
@@ -60,9 +54,6 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
-        session.user.region = token.region as string | null
-        session.user.subregion = token.subregion as string | null
-        session.user.canApprove = token.canApprove as boolean
       }
       return session
     },
