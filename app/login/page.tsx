@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/ThemeProvider'
 import ThemeToggle from '@/components/ThemeToggle'
 
 function LoginForm() {

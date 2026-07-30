@@ -31,18 +31,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const storedTheme = localStorage.getItem('theme') as Theme | null
     if (storedTheme) {
       setThemeState(storedTheme)
-      document.documentElement.setAttribute('data-theme', storedTheme)
+      applyTheme(storedTheme)
     } else {
       // Default to dark mode
       setThemeState('dark')
-      document.documentElement.setAttribute('data-theme', 'dark')
+      applyTheme('dark')
       localStorage.setItem('theme', 'dark')
     }
   }, [])
 
+  const applyTheme = (newTheme: Theme) => {
+    document.documentElement.setAttribute('data-theme', newTheme)
+    if (newTheme === 'light') {
+      document.body.classList.add('light')
+      document.body.classList.remove('dark')
+    } else {
+      document.body.classList.add('dark')
+      document.body.classList.remove('light')
+    }
+  }
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
+    applyTheme(newTheme)
     localStorage.setItem('theme', newTheme)
   }
 
