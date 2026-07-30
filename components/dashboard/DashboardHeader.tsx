@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { useTheme } from 'next-themes'
 import ThemeToggle from '../ThemeToggle'
 
 interface User {
@@ -11,8 +12,11 @@ interface User {
 }
 
 export default function DashboardHeader({ user }: { user: User }) {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5">
+    <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5 dark:border-white/5 light:border-black/5">
       <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
@@ -20,7 +24,9 @@ export default function DashboardHeader({ user }: { user: User }) {
               <div
                 className="w-10 h-10 rounded-2xl flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(145deg, #CDE9FF 0%, #A8D5FF 100%)',
+                  background: isLight
+                    ? 'linear-gradient(145deg, #0075cf 0%, #005ba3 100%)'
+                    : 'linear-gradient(145deg, #CDE9FF 0%, #A8D5FF 100%)',
                 }}
               >
                 <svg
@@ -29,7 +35,7 @@ export default function DashboardHeader({ user }: { user: User }) {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2.5}
-                  style={{ color: '#0a0a0a' }}
+                  style={{ color: isLight ? '#ffffff' : '#0a0a0a' }}
                 >
                   <path
                     strokeLinecap="round"

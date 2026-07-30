@@ -3,9 +3,12 @@
 import { signIn } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import ThemeToggle from '@/components/ThemeToggle'
 
 function LoginForm() {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const [email, setEmail] = useState('admin@foodbio.com')
   const [password, setPassword] = useState('admin123')
   const [error, setError] = useState('')
@@ -60,7 +63,9 @@ function LoginForm() {
               <div
                 className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl"
                 style={{
-                  background: 'linear-gradient(145deg, #CDE9FF 0%, #A8D5FF 100%)',
+                  background: isLight
+                    ? 'linear-gradient(145deg, #0075cf 0%, #005ba3 100%)'
+                    : 'linear-gradient(145deg, #CDE9FF 0%, #A8D5FF 100%)',
                 }}
               >
                 <svg
@@ -69,7 +74,7 @@ function LoginForm() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2.5}
-                  style={{ color: '#0a0a0a' }}
+                  style={{ color: isLight ? '#ffffff' : '#0a0a0a' }}
                 >
                   <path
                     strokeLinecap="round"
@@ -79,10 +84,16 @@ function LoginForm() {
                 </svg>
               </div>
 
-              <h1 className="text-2xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              <h1
+                className="text-2xl font-bold mb-2"
+                style={{ color: isLight ? '#1a1a1a' : '#FFFFFF' }}
+              >
                 Food Biosciences
               </h1>
-              <p style={{ color: '#B0BCD3', fontSize: '0.938rem' }}>
+              <p
+                className="text-muted"
+                style={{ fontSize: '0.938rem' }}
+              >
                 Sign in to your account
               </p>
             </div>
